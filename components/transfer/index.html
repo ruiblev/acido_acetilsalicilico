@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background: transparent;
+      color: #333;
+    }
+    .container {
+      position: relative;
+      width: 400px;
+      height: 480px; /* taller for top-down vertical sweep */
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-end;
+      padding-bottom: 20px;
+    }
+    /* Top-down circular perspective */
+    .filter-paper {
+      width: 140px;
+      height: 140px;
+      background: #f8fafc;
+      border-radius: 50%;
+      position: absolute;
+      top: 30px;
+      left: 130px;
+      z-index: 1;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+      border: 1px solid #e2e8f0;
+    }
+    .watch-glass {
+      width: 160px;
+      height: 160px;
+      background: rgba(200, 220, 240, 0.3);
+      border: 4px solid rgba(255, 255, 255, 0.9);
+      border-radius: 50%;
+      position: absolute;
+      bottom: 100px;
+      left: 120px;
+      z-index: 1;
+      box-shadow: 0 10px 20px rgba(0,0,0,0.1), inset 0 0 30px rgba(255,255,255,0.7);
+    }
+    
+    .crystals-source {
+      width: 90px;
+      height: 90px;
+      background: #ffffff;
+      position: absolute;
+      top: 55px;
+      left: 155px;
+      z-index: 2;
+      border-radius: 40% 50% 45% 40%;
+      box-shadow: inset 0 3px 6px rgba(0,0,0,0.1), 0 2px 4px rgba(0,0,0,0.05);
+      transition: height 0.1s, top 0.1s, opacity 0.1s;
+    }
+    
+    .crystals-dest {
+      width: 90px;
+      height: 0px;
+      background: #ffffff;
+      position: absolute;
+      bottom: 140px;
+      left: 155px;
+      z-index: 2;
+      border-radius: 40% 50% 45% 40%;
+      box-shadow: inset 0 3px 6px rgba(0,0,0,0.1), 0 2px 4px rgba(0,0,0,0.05);
+      transition: height 0.1s;
+    }
+    
+    .spatula {
+      width: 160px;
+      height: 25px;
+      background: linear-gradient(to right, #64748b, #cbd5e1);
+      border-radius: 12px;
+      position: absolute;
+      top: 40px;
+      left: 120px; 
+      z-index: 5;
+      transform: rotate(10deg);
+      box-shadow: 0 10px 15px rgba(0,0,0,0.2);
+      transition: top 0.1s;
+    }
+    
+    .controls {
+      margin-top: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 15px;
+    }
+    .btn {
+      background: #3b82f6;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 4px 6px rgba(59, 130, 246, 0.3);
+      transition: all 0.2s;
+    }
+    .btn:active {
+      transform: translateY(2px);
+    }
+    .btn:disabled {
+      background: #94a3b8;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+    .btn.success {
+      background: #10b981;
+      box-shadow: 0 4px 6px rgba(16, 185, 129, 0.3);
+    }
+    .instruction {
+      font-size: 16px;
+      color: #334155;
+      text-align: center;
+      font-weight: 600;
+    }
+    .progress-bar {
+      width: 200px;
+      height: 10px;
+      background: #e2e8f0;
+      border-radius: 5px;
+      overflow: hidden;
+      margin-top: 5px;
+    }
+    .progress-fill {
+      width: 0%;
+      height: 100%;
+      background: #38bdf8;
+      transition: width 0.1s;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="filter-paper"></div>
+    <div class="crystals-source" id="crystals-src"></div>
+    
+    <div class="watch-glass"></div>
+    <div class="crystals-dest" id="crystals-dst"></div>
+    
+    <div class="spatula" id="spatula"></div>
+  </div>
+  
+  <div class="controls">
+    <button class="btn" id="action-btn" onmousedown="startTransfer()" onmouseup="stopTransfer()" onmouseleave="stopTransfer()" ontouchstart="startTransfer()" ontouchend="stopTransfer()">Manter premido para arrastar</button>
+    <div class="instruction" id="instr-text">Arraste os cristais do papel de filtro para o vidro de relógio.</div>
+    <div class="progress-bar"><div class="progress-fill" id="progress"></div></div>
+  </div>
+
+  <script>
+    const actionBtn = document.getElementById('action-btn');
+    const instrText = document.getElementById('instr-text');
+    const spatula = document.getElementById('spatula');
+    const src = document.getElementById('crystals-src');
+    const dst = document.getElementById('crystals-dst');
+    const progressFill = document.getElementById('progress');
+    
+    let transferAmount = 0; // 0 to 100
+    let interval;
+
+    function startTransfer() {
+      if (transferAmount >= 100) return;
+      spatula.style.transform = "rotate(0deg)"; // straight horizontal to sweep down
+      
+      interval = setInterval(() => {
+          transferAmount += 1;
+          progressFill.style.width = transferAmount + '%';
+          
+          // Animate logic
+          // Move spatula from top 40px to top 300px
+          let spatTop = 40 + (transferAmount * 2.6);
+          spatula.style.top = spatTop + 'px';
+          
+          // Shrink source visually by increasing top and decreasing height
+          if (transferAmount < 60) {
+              // Pushing through the first circle
+              let srcHeight = 90 - (transferAmount * 1.5);
+              let srcTop = 55 + (transferAmount * 1.5);
+              if (srcHeight < 0) { srcHeight = 0; src.style.opacity = '0'; }
+              src.style.height = srcHeight + 'px';
+              src.style.top = srcTop + 'px';
+          } else {
+              src.style.opacity = '0';
+          }
+          
+          // Grow dest
+          if (transferAmount > 40) {
+              let dstHeight = ((transferAmount - 40) * 1.5);
+              if (dstHeight > 90) dstHeight = 90;
+              dst.style.height = dstHeight + 'px';
+          }
+          
+          if (transferAmount >= 100) {
+              stopTransfer();
+              spatula.style.transform = "rotate(10deg)";
+              actionBtn.innerText = "Confirmar e Avançar";
+              actionBtn.className = "btn success";
+              actionBtn.onmousedown = null;
+              actionBtn.onmouseup = null;
+              actionBtn.onmouseleave = null;
+              actionBtn.ontouchstart = null;
+              actionBtn.ontouchend = null;
+              actionBtn.onclick = finishStep;
+              instrText.innerText = "Transferência concluída com sucesso.";
+          }
+      }, 30);
+    }
+    
+    function stopTransfer() {
+       if (interval) {
+           clearInterval(interval);
+           interval = null;
+       }
+       if (transferAmount < 100) {
+           spatula.style.transform = "rotate(10deg)";
+       }
+    }
+    
+    function finishStep() {
+        if (window.parent && window.parent.document) {
+          const buttons = window.parent.document.querySelectorAll('button');
+          buttons.forEach(btn => {
+            if (btn.innerText && btn.innerText.includes('Avançar_Hidden')) {
+              btn.click();
+            }
+          });
+        }
+    }
+  </script>
+</body>
+</html>

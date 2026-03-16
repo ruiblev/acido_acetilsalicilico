@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background: transparent;
+      color: #333;
+    }
+    .container {
+      position: relative;
+      width: 400px;
+      height: 400px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding-bottom: 20px;
+    }
+    
+    .oven {
+      width: 250px;
+      height: 200px;
+      background: #e2e8f0;
+      border: 4px solid #94a3b8;
+      border-radius: 10px;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      box-shadow: inset 0 0 20px rgba(0,0,0,0.1), 0 10px 20px rgba(0,0,0,0.1);
+    }
+    
+    .oven-window {
+      width: 180px;
+      height: 120px;
+      background: #1e293b;
+      border: 4px solid #cbd5e1;
+      border-radius: 5px;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-end;
+      overflow: hidden;
+    }
+    
+    .heating-element {
+      width: 100%;
+      height: 15px;
+      background: #334155;
+      position: absolute;
+      top: 10px;
+      display: flex;
+      justify-content: space-around;
+      transition: background 0.5s;
+    }
+    .heating-element.hot {
+      background: #ef4444;
+      box-shadow: 0 0 15px #ef4444;
+    }
+    
+    .watch-glass {
+      width: 80px;
+      height: 15px;
+      background: rgba(255, 255, 255, 0.4);
+      border: 2px solid rgba(255, 255, 255, 0.8);
+      border-radius: 50%;
+      position: absolute;
+      bottom: 10px;
+      z-index: 2;
+    }
+    .crystals {
+      width: 60px;
+      height: 20px;
+      background: #f8fafc;
+      border-radius: 50% 50% 10% 10%;
+      position: absolute;
+      bottom: 15px;
+      z-index: 3;
+    }
+    
+    .panel {
+      position: absolute;
+      right: 10px;
+      top: 10px;
+      width: 40px;
+      height: 180px;
+      background: #cbd5e1;
+      border-radius: 5px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding-top: 10px;
+      gap: 10px;
+    }
+    .dial {
+      width: 20px;
+      height: 20px;
+      background: #64748b;
+      border-radius: 50%;
+      position: relative;
+    }
+    .dial::after {
+      content: '';
+      position: absolute;
+      top: 2px;
+      left: 8px;
+      width: 4px;
+      height: 8px;
+      background: #f1f5f9;
+      border-radius: 2px;
+      transform-origin: bottom center;
+      transition: transform 0.5s;
+    }
+    .dial.on::after {
+      transform: rotate(90deg);
+    }
+    
+    .display {
+      width: 120px;
+      height: 30px;
+      background: #0f172a;
+      color: #38bdf8;
+      font-family: monospace;
+      font-size: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 5px;
+      position: absolute;
+      top: -45px;
+      border: 2px solid #94a3b8;
+    }
+    
+    .controls {
+      margin-top: 40px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 15px;
+    }
+    .btn {
+      background: #3b82f6;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 4px 6px rgba(59, 130, 246, 0.3);
+      transition: all 0.2s;
+    }
+    .btn:active {
+      transform: translateY(2px);
+    }
+    .btn:disabled {
+      background: #94a3b8;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+    .btn.success {
+      background: #10b981;
+      box-shadow: 0 4px 6px rgba(16, 185, 129, 0.3);
+    }
+    .instruction {
+      font-size: 16px;
+      color: #334155;
+      text-align: center;
+      font-weight: 600;
+    }
+    .progress-bar {
+      width: 200px;
+      height: 10px;
+      background: #e2e8f0;
+      border-radius: 5px;
+      overflow: hidden;
+      margin-top: 5px;
+    }
+    .progress-fill {
+      width: 0%;
+      height: 100%;
+      background: #ef4444;
+      transition: width 0.1s;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="oven">
+      <div class="display" id="display">22 °C</div>
+      <div class="panel">
+        <div class="dial" id="dial1"></div>
+        <div class="dial" id="dial2"></div>
+      </div>
+      <div class="oven-window">
+        <div class="heating-element" id="heater"></div>
+        <div class="watch-glass"></div>
+        <div class="crystals" id="crystals"></div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="controls">
+    <button class="btn" id="action-btn" onmousedown="startDrying()" onmouseup="stopDrying()" onmouseleave="stopDrying()" ontouchstart="startDrying()" ontouchend="stopDrying()">Manter premido para secar</button>
+    <div class="instruction" id="instr-text">Seque na estufa a 90ºC.</div>
+    <div class="progress-bar"><div class="progress-fill" id="progress"></div></div>
+  </div>
+
+  <script>
+    const actionBtn = document.getElementById('action-btn');
+    const instrText = document.getElementById('instr-text');
+    const display = document.getElementById('display');
+    const heater = document.getElementById('heater');
+    const dial1 = document.getElementById('dial1');
+    const dial2 = document.getElementById('dial2');
+    const progressFill = document.getElementById('progress');
+    
+    let temp = 22;
+    let time = 0; // up to 100 for progress
+    let interval;
+
+    function startDrying() {
+      if (time >= 100) return;
+      heater.classList.add('hot');
+      dial1.classList.add('on');
+      dial2.classList.add('on');
+      
+      interval = setInterval(() => {
+          if (temp < 90) {
+              temp += 1;
+              display.innerText = temp + " °C";
+          } else {
+              time += 0.5;
+              progressFill.style.width = time + '%';
+              instrText.innerText = "A secar a 90ºC... (" + Math.floor(time) + "%)";
+          }
+          
+          if (time >= 100) {
+              stopDrying();
+              actionBtn.innerText = "Confirmar e Avançar";
+              actionBtn.className = "btn success";
+              actionBtn.onmousedown = null;
+              actionBtn.onmouseup = null;
+              actionBtn.onmouseleave = null;
+              actionBtn.ontouchstart = null;
+              actionBtn.ontouchend = null;
+              actionBtn.onclick = finishStep;
+              instrText.innerText = "Secagem concluída. Os cristais estão prontos.";
+              display.innerText = "OFF";
+          }
+      }, 50);
+    }
+    
+    function stopDrying() {
+       if (interval) {
+           clearInterval(interval);
+           interval = null;
+       }
+       if (time < 100) {
+           heater.classList.remove('hot');
+           dial1.classList.remove('on');
+           dial2.classList.remove('on');
+       }
+    }
+    
+    function finishStep() {
+        if (window.parent && window.parent.document) {
+          const buttons = window.parent.document.querySelectorAll('button');
+          buttons.forEach(btn => {
+            if (btn.innerText && btn.innerText.includes('Avançar_Hidden')) {
+              btn.click();
+            }
+          });
+        }
+    }
+  </script>
+</body>
+</html>

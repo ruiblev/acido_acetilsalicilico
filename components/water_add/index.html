@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background: transparent;
+      color: #333;
+    }
+    .container {
+      position: relative;
+      width: 400px;
+      height: 400px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-end;
+      padding-bottom: 20px;
+    }
+    .beaker {
+      width: 60px;
+      height: 80px;
+      border: 3px solid rgba(255, 255, 255, 0.8);
+      border-radius: 5px;
+      border-top: none;
+      background: rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(5px);
+      position: absolute;
+      top: 50px;
+      left: 80px;
+      z-index: 3;
+      transform-origin: top right;
+      transition: transform 1s ease-in-out, left 1s, top 1s;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      overflow: hidden;
+    }
+    .beaker-liquid {
+      width: 100%;
+      height: 80%;
+      background: rgba(100, 200, 255, 0.5); /* Water */
+      transition: height 1s linear;
+    }
+    .beaker.pouring {
+      transform: rotate(85deg);
+      left: 130px;
+      top: 150px;
+    }
+    .flask {
+      width: 140px;
+      height: 160px;
+      position: relative;
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(2px);
+      box-shadow: inset -5px -5px 15px rgba(255,255,255,0.2), inset 5px 5px 15px rgba(255,255,255,0.4), 0 10px 15px rgba(0,0,0,0.1);
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      clip-path: polygon(40% 0%, 60% 0%, 60% 30%, 100% 90%, 100% 100%, 0% 100%, 0% 90%, 40% 30%);
+      border-radius: 5px;
+      overflow: hidden;
+      margin-bottom: 20px;
+    }
+    .flask::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 10%;
+      width: 20%;
+      height: 100%;
+      background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.6) 50%, rgba(255,255,255,0) 100%);
+      transform: skewX(-15deg);
+      pointer-events: none;
+    }
+    .flask-liquid {
+      width: 100%;
+      height: 40%;
+      background: linear-gradient(to top, rgba(200, 200, 200, 0.8) 10%, rgba(100, 150, 255, 0.4) 100%);
+      position: absolute;
+      bottom: 0;
+      transition: height 1s linear;
+    }
+    .flask-liquid.filled {
+      height: 55%;
+    }
+
+    .stream {
+      width: 6px;
+      height: 0px;
+      background: rgba(100, 200, 255, 0.5);
+      position: absolute;
+      top: 150px;
+      left: 190px;
+      z-index: 1;
+      transition: height 0.5s linear, top 0.5s linear;
+      transform-origin: top;
+    }
+    .stream.active {
+      height: 100px;
+    }
+    .stream.finishing {
+      height: 0px;
+      top: 250px;
+    }
+    
+    .controls {
+      margin-top: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 15px;
+    }
+    .btn {
+      background: #3b82f6;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 4px 6px rgba(59, 130, 246, 0.3);
+      transition: all 0.2s;
+    }
+    .btn:active {
+      transform: translateY(2px);
+    }
+    .btn.success {
+      background: #10b981;
+      box-shadow: 0 4px 6px rgba(16, 185, 129, 0.3);
+    }
+    .btn:disabled {
+      background: #94a3b8;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="beaker" id="beaker">
+      <div class="beaker-liquid" id="beaker-liquid"></div>
+    </div>
+    <div class="stream" id="stream"></div>
+    
+    <div class="flask">
+      <div class="flask-liquid" id="flask-liquid"></div>
+    </div>
+  </div>
+  
+  <div class="controls">
+    <button class="btn" id="action-btn" onmousedown="startPour()" onmouseup="stopPour()" onmouseleave="stopPour()" ontouchstart="startPour()" ontouchend="stopPour()">Manter premido para adicionar ({{AMOUNT}})</button>
+  </div>
+
+  <script>
+    const beaker = document.getElementById('beaker');
+    const beakerLiquid = document.getElementById('beaker-liquid');
+    const flaskLiquid = document.getElementById('flask-liquid');
+    const stream = document.getElementById('stream');
+    const actionBtn = document.getElementById('action-btn');
+
+    let pourAmount = 0;
+    let isPouring = false;
+    let pourInterval;
+    let preparationTimeout;
+
+    function startPour() {
+      if (pourAmount >= 100) return;
+      isPouring = true;
+      beaker.classList.add('pouring');
+      
+      preparationTimeout = setTimeout(() => {
+        if (!isPouring) return;
+        stream.classList.add('active');
+        
+        pourInterval = setInterval(() => {
+           pourAmount += 2;
+           beakerLiquid.style.transition = 'none';
+           flaskLiquid.style.transition = 'none';
+           beakerLiquid.style.height = (100 - pourAmount) + '%';
+           flaskLiquid.style.height = (40 + pourAmount * 0.15) + '%'; // goes to 55%
+           
+           if (pourAmount >= 100) {
+               stopPour();
+               actionBtn.innerText = "Confirmar e Avançar";
+               actionBtn.className = "btn success";
+               actionBtn.onmousedown = null;
+               actionBtn.onmouseup = null;
+               actionBtn.onmouseleave = null;
+               actionBtn.ontouchstart = null;
+               actionBtn.ontouchend = null;
+               actionBtn.onclick = finishStep;
+           }
+        }, 50);
+      }, 1000); // waits for rotation
+    }
+    
+    function stopPour() {
+       isPouring = false;
+       clearTimeout(preparationTimeout);
+       if (pourInterval) {
+           clearInterval(pourInterval);
+           pourInterval = null;
+       }
+       stream.classList.remove('active');
+       stream.classList.remove('finishing');
+       beaker.classList.remove('pouring');
+       if (pourAmount < 100) {
+           // just hide stream immediately
+       }
+    }
+    
+    function finishStep() {
+        if (window.parent && window.parent.document) {
+          const buttons = window.parent.document.querySelectorAll('button');
+          buttons.forEach(btn => {
+            if (btn.innerText && btn.innerText.includes('Avançar_Hidden')) {
+              btn.click();
+            }
+          });
+        }
+    }
+  </script>
+</body>
+</html>

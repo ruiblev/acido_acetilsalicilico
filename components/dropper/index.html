@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background: transparent;
+      color: #333;
+    }
+    .container {
+      position: relative;
+      width: 400px;
+      height: 400px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-end;
+      padding-bottom: 20px;
+    }
+    .dropper {
+      width: 15px;
+      height: 100px;
+      border: 2px solid rgba(255, 255, 255, 0.8);
+      border-radius: 5px;
+      border-top-left-radius: 10px;
+      border-top-right-radius: 10px;
+      background: rgba(255, 255, 255, 0.3);
+      position: absolute;
+      top: 50px;
+      z-index: 3;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .dropper-bulb {
+      width: 30px;
+      height: 40px;
+      background: #ef4444; /* red bulb */
+      border-radius: 15px 15px 5px 5px;
+      position: absolute;
+      top: -30px;
+      left: -9.5px;
+      cursor: pointer;
+      box-shadow: inset -3px -3px 10px rgba(0,0,0,0.2);
+      transition: transform 0.1s;
+    }
+    .dropper-bulb:active {
+      transform: scaleY(0.8) translateY(5px);
+    }
+    .flask {
+      width: 140px;
+      height: 160px;
+      position: relative;
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(2px);
+      box-shadow: inset -5px -5px 15px rgba(255,255,255,0.2), inset 5px 5px 15px rgba(255,255,255,0.4), 0 10px 15px rgba(0,0,0,0.1);
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      clip-path: polygon(40% 0%, 60% 0%, 60% 30%, 100% 90%, 100% 100%, 0% 100%, 0% 90%, 40% 30%);
+      border-radius: 5px;
+      overflow: hidden;
+      margin-bottom: 20px;
+    }
+    .flask::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 10%;
+      width: 20%;
+      height: 100%;
+      background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.6) 50%, rgba(255,255,255,0) 100%);
+      transform: skewX(-15deg);
+      pointer-events: none;
+    }
+    .flask-liquid {
+      width: 100%;
+      height: 40%;
+      background: linear-gradient(to top, rgba(200, 200, 200, 0.8) 10%, rgba(100, 150, 255, 0.4) 100%);
+      position: absolute;
+      bottom: 0;
+    }
+    .controls {
+      margin-top: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 15px;
+    }
+    .btn {
+      background: #3b82f6;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 4px 6px rgba(59, 130, 246, 0.3);
+      transition: all 0.2s;
+    }
+    .btn:active {
+      transform: translateY(2px);
+      box-shadow: 0 1px 2px rgba(59, 130, 246, 0.3);
+    }
+    .btn:disabled {
+      background: #94a3b8;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+    .btn.success {
+      background: #10b981;
+      box-shadow: 0 4px 6px rgba(16, 185, 129, 0.3);
+    }
+    .btn.success:hover { background: #059669; }
+    
+    .instruction {
+      font-size: 16px;
+      color: #334155;
+      text-align: center;
+      font-weight: 600;
+    }
+    
+    .drop {
+      width: 8px;
+      height: 12px;
+      background: rgba(200, 200, 255, 0.8); /* Ácido Sulfúrico - transparente */
+      border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+      position: absolute;
+      top: 155px;
+      left: 50%;
+      transform: translateX(-50%);
+      opacity: 0;
+      z-index: 1;
+    }
+    @keyframes drop-fall {
+      0% { top: 155px; opacity: 1; transform: translateX(-50%) scale(0.5); }
+      10% { transform: translateX(-50%) scale(1); }
+      100% { top: 350px; opacity: 0; transform: translateX(-50%) scale(1); }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="dropper" id="dropper">
+      <div class="dropper-bulb" onclick="addDrop()"></div>
+    </div>
+    
+    <div class="flask">
+      <div class="flask-liquid"></div>
+    </div>
+    
+    <div id="drops-container"></div>
+  </div>
+  
+  <div class="controls">
+    <button class="btn" id="action-btn" onmousedown="startDropping()" onmouseup="stopDropping()" onmouseleave="stopDropping()" ontouchstart="startDropping()" ontouchend="stopDropping()">Manter premido para adicionar gotas</button>
+    <div class="instruction" id="instr-text">Gotas adicionadas: 0 / 4</div>
+  </div>
+
+  <script>
+    let drops = 0;
+    const maxDrops = 4;
+    const actionBtn = document.getElementById('action-btn');
+    const instrText = document.getElementById('instr-text');
+    const dropsContainer = document.getElementById('drops-container');
+    let dropInterval = null;
+
+    function createDrop() {
+      if (drops >= maxDrops) return;
+      const dropEl = document.createElement('div');
+      dropEl.className = 'drop';
+      dropEl.style.animation = 'drop-fall 0.6s ease-in forwards';
+      dropsContainer.appendChild(dropEl);
+      
+      const bulb = document.querySelector('.dropper-bulb');
+      bulb.style.transform = 'scaleY(0.8) translateY(5px)';
+      setTimeout(() => bulb.style.transform = 'none', 150);
+      
+      setTimeout(() => {
+        drops++;
+        instrText.innerText = `Gotas adicionadas: ${drops} / ${maxDrops}`;
+        dropEl.remove();
+        
+        if (drops >= maxDrops) {
+            stopDropping();
+            actionBtn.innerText = "Confirmar e Avançar";
+            actionBtn.className = "btn success";
+            actionBtn.onmousedown = null;
+            actionBtn.onmouseup = null;
+            actionBtn.onmouseleave = null;
+            actionBtn.ontouchstart = null;
+            actionBtn.ontouchend = null;
+            actionBtn.onclick = finishStep;
+            instrText.innerText = "Catalisador adicionado com sucesso.";
+        }
+      }, 600);
+    }
+    
+    function startDropping() {
+       if (drops >= maxDrops) return;
+       // add first drop immediately
+       createDrop();
+       // then schedule next drops
+       dropInterval = setInterval(() => {
+           createDrop();
+       }, 800);
+    }
+    
+    function stopDropping() {
+       if (dropInterval) {
+           clearInterval(dropInterval);
+           dropInterval = null;
+       }
+    }
+    
+    function finishStep() {
+        if (window.parent && window.parent.document) {
+          const buttons = window.parent.document.querySelectorAll('button');
+          buttons.forEach(btn => {
+            if (btn.innerText && btn.innerText.includes('Avançar_Hidden')) {
+              btn.click();
+            }
+          });
+        }
+    }
+  </script>
+</body>
+</html>

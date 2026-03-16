@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background: transparent;
+      color: #333;
+    }
+    .container {
+      position: relative;
+      width: 400px;
+      height: 400px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-end;
+      padding-bottom: 20px;
+    }
+    .flask {
+      width: 140px;
+      height: 160px;
+      position: relative;
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(2px);
+      box-shadow: inset -5px -5px 15px rgba(255,255,255,0.2), inset 5px 5px 15px rgba(255,255,255,0.4), 0 10px 15px rgba(0,0,0,0.1);
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      clip-path: polygon(40% 0%, 60% 0%, 60% 30%, 100% 90%, 100% 100%, 0% 100%, 0% 90%, 40% 30%);
+      border-radius: 5px;
+      overflow: hidden;
+      margin-bottom: -15px; /* sit on the scale plate */
+    }
+    .flask::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 10%;
+      width: 20%;
+      height: 100%;
+      background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.6) 50%, rgba(255,255,255,0) 100%);
+      transform: skewX(-15deg);
+      pointer-events: none;
+    }
+    .funnel {
+      position: absolute;
+      top: 130px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 80px;
+      height: 70px;
+      background: rgba(255, 255, 255, 0.4);
+      clip-path: polygon(0 0, 100% 0, 60% 50%, 60% 100%, 40% 100%, 40% 50%);
+      z-index: 1;
+      backdrop-filter: blur(2px);
+      box-shadow: inset 0px 5px 10px rgba(255,255,255,0.6);
+    }
+    .funnel::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 20%;
+      width: 10%;
+      height: 100%;
+      background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.8) 50%, rgba(255,255,255,0) 100%);
+      pointer-events: none;
+    }
+    .scale {
+      width: 250px;
+      height: 60px;
+      background: #e2e8f0;
+      border-radius: 10px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.2), inset 0 2px 0 rgba(255,255,255,0.8);
+      position: relative;
+      z-index: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 10px;
+    }
+    .scale-plate {
+      position: absolute;
+      top: -10px;
+      width: 150px;
+      height: 10px;
+      background: #cbd5e1;
+      border-radius: 50%;
+    }
+    .display {
+      background: #86efac;
+      padding: 5px 15px;
+      border-radius: 5px;
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 24px;
+      font-weight: bold;
+      color: #064e3b;
+      box-shadow: inset 0 2px 5px rgba(0,0,0,0.2);
+      letter-spacing: 2px;
+    }
+    .spatula {
+      position: absolute;
+      top: 10px;
+      right: 120px;
+      width: 120px;
+      height: 8px;
+      background: linear-gradient(to right, #64748b, #cbd5e1);
+      border-radius: 4px;
+      transform: rotate(-15deg);
+      transform-origin: right center;
+      transition: transform 0.2s;
+      z-index: 5;
+    }
+    .spatula::before {
+      content: '';
+      position: absolute;
+      left: -10px;
+      top: -4px;
+      width: 30px;
+      height: 16px;
+      background: #94a3b8;
+      border-radius: 5px;
+      box-shadow: inset 0 -2px 5px rgba(0,0,0,0.2);
+    }
+    .spatula.active {
+      transform: rotate(-35deg) translate(-20px, 30px);
+    }
+    .powder-area {
+      position: absolute;
+      bottom: 0;
+      width: 100%;
+      height: 0%;
+      background: #f8fafc;
+      transition: height 0.1s;
+    }
+    .particle {
+      position: absolute;
+      width: 4px;
+      height: 4px;
+      background: #f8fafc;
+      border-radius: 50%;
+      box-shadow: 0 0 2px rgba(0,0,0,0.1);
+      top: 40px; /* near spatula tip */
+      left: 50%; /* centered above funnel */
+      opacity: 0;
+      z-index: 4;
+    }
+    @keyframes fall {
+      0% { transform: translateY(0) translateX(0); opacity: 1; }
+      30% { transform: translateY(90px) translateX(calc(var(--rx) * 0.2)); opacity: 1; } /* fall through funnel */
+      100% { transform: translateY(270px) translateX(var(--rx)); opacity: 0; }
+    }
+    .controls {
+      margin-top: 30px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 15px;
+    }
+    .btn {
+      background: #3b82f6;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 4px 6px rgba(59, 130, 246, 0.3);
+      transition: all 0.2s;
+      user-select: none;
+      outline: none;
+    }
+    .btn:active {
+      transform: translateY(2px);
+      box-shadow: 0 1px 2px rgba(59, 130, 246, 0.3);
+      background: #2563eb;
+    }
+    .btn.success {
+      background: #10b981;
+      box-shadow: 0 4px 6px rgba(16, 185, 129, 0.3);
+    }
+    .btn.success:hover { background: #059669; }
+    
+    .instruction {
+      font-size: 14px;
+      color: #64748b;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="spatula" id="spatula"></div>
+    <div class="funnel"></div>
+    <div class="flask">
+      <div class="powder-area" id="powder"></div>
+    </div>
+    <div class="scale">
+      <div class="scale-plate"></div>
+      <div class="display" id="display">0.0000 g</div>
+    </div>
+    <div id="particles-container"></div>
+  </div>
+  
+  <div class="controls">
+    <button class="btn" id="pour-btn" onmousedown="startPouring()" onmouseup="stopPouring()" onmouseleave="stopPouring()" ontouchstart="startPouring()" ontouchend="stopPouring()">Manter premido para verter</button>
+    <div class="instruction">Adicione cerca de 2,00 g de ácido salicílico.</div>
+    <button class="btn success" id="next-btn" style="display: none;" onclick="sendValue()">Confirmar e Avançar</button>
+  </div>
+
+  <script>
+    let mass = 0.0;
+    let pouring = false;
+    let intervalId = null;
+    let particleIntervalId = null;
+
+    function renderComponent() {
+      Streamlit.setFrameHeight(550);
+    }
+
+    function updateDisplay() {
+      document.getElementById('display').innerText = mass.toFixed(4) + ' g';
+      // update powder height in flask (max height ~ 8% for 2.0g)
+      let heightPct = Math.min((mass / 5.0) * 20, 10);
+      document.getElementById('powder').style.height = heightPct + '%';
+      
+      if (mass >= 1.9500) {
+        document.getElementById('next-btn').style.display = 'block';
+      }
+    }
+
+    function createParticle() {
+      const p = document.createElement('div');
+      p.className = 'particle';
+      // random x drift between -8px and +8px to fit in the neck
+      const rx = (Math.random() - 0.5) * 16;
+      p.style.setProperty('--rx', rx + 'px');
+      p.style.animation = `fall 0.6s linear forwards`;
+      document.getElementById('particles-container').appendChild(p);
+      
+      setTimeout(() => {
+        p.remove();
+      }, 600);
+    }
+
+    function startPouring() {
+      if (pouring) return;
+      pouring = true;
+      document.getElementById('spatula').classList.add('active');
+      
+      intervalId = setInterval(() => {
+        mass += 0.0451; // accelerated for 2g target
+        updateDisplay();
+      }, 50);
+
+      particleIntervalId = setInterval(() => {
+        createParticle();
+      }, 30);
+    }
+
+    function stopPouring() {
+      pouring = false;
+      document.getElementById('spatula').classList.remove('active');
+      clearInterval(intervalId);
+      clearInterval(particleIntervalId);
+      updateDisplay();
+    }
+
+    function sendValue() {
+      // Find the hidden Streamlit button and click it
+      if (window.parent && window.parent.document) {
+        const buttons = window.parent.document.querySelectorAll('button');
+        buttons.forEach(btn => {
+          if (btn.innerText && btn.innerText.includes('Avançar_Hidden')) {
+            btn.click();
+          }
+        });
+      }
+    }
+  </script>
+</body>
+</html>

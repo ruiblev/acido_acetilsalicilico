@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background: transparent;
+      color: #333;
+    }
+    .container {
+      position: relative;
+      width: 400px;
+      height: 480px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-end;
+      padding-bottom: 20px;
+    }
+    
+    .funnel {
+      width: 80px;
+      height: 60px;
+      border: 3px solid rgba(255, 255, 255, 0.9);
+      background: rgba(255, 255, 255, 0.4);
+      backdrop-filter: blur(5px);
+      position: absolute;
+      top: 200px;
+      z-index: 4;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-end;
+      border-radius: 5px;
+      box-shadow: 0 5px 10px rgba(0,0,0,0.1);
+    }
+    .funnel-tube {
+      width: 15px;
+      height: 50px;
+      border-left: 3px solid rgba(255, 255, 255, 0.9);
+      border-right: 3px solid rgba(255, 255, 255, 0.9);
+      background: rgba(255, 255, 255, 0.2);
+      position: absolute;
+      top: 260px;
+      z-index: 3;
+    }
+    .filter-paper {
+      width: 70px;
+      height: 5px;
+      background: #f8fafc;
+      border-radius: 50%;
+      position: absolute;
+      bottom: 80px; /* Starts above funnel */
+      opacity: 0;
+      z-index: 5;
+      transition: bottom 0.5s ease-in, opacity 0.5s;
+    }
+    .filter-paper.placed {
+      bottom: 5px;
+      opacity: 1;
+    }
+    .mixture {
+      width: 70px;
+      height: 40px;
+      background: linear-gradient(to top, rgba(230,230,230,0.9), rgba(150,200,255,0.5));
+      position: absolute;
+      bottom: 10px;
+      z-index: 4;
+      opacity: 0; /* Hidden initially */
+      transition: opacity 1s;
+    }
+    .mixture.visible {
+      opacity: 1;
+    }
+    .crystals {
+      width: 60px;
+      height: 0px;
+      background: rgba(255, 255, 255, 0.9);
+      position: absolute;
+      bottom: 10px;
+      z-index: 5;
+      border-radius: 5px;
+      box-shadow: inset 0 2px 5px rgba(0,0,0,0.1);
+    }
+    
+    .kitasato {
+      width: 140px;
+      height: 160px;
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(2px);
+      box-shadow: inset -5px -5px 15px rgba(255,255,255,0.2), inset 5px 5px 15px rgba(255,255,255,0.4), 0 10px 15px rgba(0,0,0,0.1);
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      clip-path: polygon(40% 0%, 60% 0%, 60% 30%, 100% 90%, 100% 100%, 0% 100%, 0% 90%, 40% 30%);
+      border-radius: 5px;
+      overflow: hidden;
+    }
+    .kitasato::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 10%;
+      width: 20%;
+      height: 100%;
+      background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.6) 50%, rgba(255,255,255,0) 100%);
+      transform: skewX(-15deg);
+      pointer-events: none;
+    }
+
+    .side-arm {
+      width: 40px;
+      height: 10px;
+      border-top: 3px solid rgba(255, 255, 255, 0.8);
+      border-bottom: 3px solid rgba(255, 255, 255, 0.8);
+      background: rgba(255, 255, 255, 0.2);
+      position: absolute;
+      top: 330px; /* High up on the neck */
+      left: 175px; /* Center 200 - width/2? 50% of 400 is 200. Neck center is 200. Width 140. Neck is 40% to 60%. Neck width is 28px? 0.2 * 140. */
+      z-index: 1;
+    }
+    .hose {
+      position: absolute;
+      top: 330px;
+      left: 85px;
+      width: 90px;
+      height: 110px;
+      border: 8px solid #1e293b;
+      border-top: none;
+      border-right: none;
+      border-radius: 0 0 0 30px;
+      z-index: 0;
+    }
+    .vacuum-pump {
+      width: 60px;
+      height: 80px;
+      background: linear-gradient(to bottom, #475569, #1e293b);
+      border-radius: 8px;
+      position: absolute;
+      bottom: 20px;
+      right: 20px;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+      border: 2px solid #64748b;
+    }
+    .pump-dial {
+      width: 24px;
+      height: 24px;
+      background: #f8fafc;
+      border-radius: 50%;
+      border: 3px solid #94a3b8;
+      position: relative;
+    }
+    .pump-dial::after {
+      content: '';
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      width: 8px;
+      height: 2px;
+      background: #ef4444;
+      transform-origin: left center;
+      transform: rotate(-45deg);
+      transition: transform 0.3s;
+    }
+    .vacuum-pump.active .pump-dial::after {
+      transform: rotate(45deg);
+    }
+    
+    .filtrate {
+      width: 100%;
+      height: 0%;
+      background: rgba(150, 200, 255, 0.5);
+      position: absolute;
+      bottom: 0;
+    }
+    .drop {
+      width: 8px;
+      height: 15px;
+      background: rgba(150, 200, 255, 0.5);
+      border-radius: 50%;
+      position: absolute;
+      top: 310px;
+      left: 50%;
+      transform: translateX(-50%);
+      opacity: 0;
+      z-index: 3;
+    }
+    @keyframes drip {
+      0% { top: 310px; opacity: 1; }
+      100% { top: 420px; opacity: 0; }
+    }
+    
+    .wash-drop {
+      width: 6px;
+      height: 10px;
+      background: rgba(100, 200, 255, 0.5);
+      border-radius: 50%;
+      position: absolute;
+      top: 160px;
+      left: 50%;
+      transform: translateX(-50%);
+      opacity: 0;
+      z-index: 5;
+    }
+    @keyframes wash-drip {
+      0% { top: 160px; opacity: 1; }
+      100% { top: 210px; opacity: 0; }
+    }
+
+    
+    .controls {
+      margin-top: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 15px;
+    }
+    .btn {
+      background: #3b82f6;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 4px 6px rgba(59, 130, 246, 0.3);
+      transition: all 0.2s;
+    }
+    .btn:active {
+      transform: translateY(2px);
+    }
+    .btn:disabled {
+      background: #94a3b8;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+    .btn.success {
+      background: #10b981;
+      box-shadow: 0 4px 6px rgba(16, 185, 129, 0.3);
+    }
+    .instruction {
+      font-size: 16px;
+      color: #334155;
+      text-align: center;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="funnel">
+      <div class="filter-paper" id="filter-paper"></div>
+      <div class="mixture" id="mixture"></div>
+      <div class="crystals" id="crystals"></div>
+    </div>
+    <div class="funnel-tube"></div>
+    
+    <div class="drop" id="drop"></div>
+
+    <div class="side-arm"></div>
+    <div class="hose"></div>
+    
+    <div class="vacuum-pump" id="pump">
+      <div class="pump-dial"></div>
+    </div>
+    
+    <div class="kitasato">
+      <div class="filtrate" id="filtrate"></div>
+    </div>
+  </div>
+  
+  <div class="controls">
+    <button class="btn" id="action-btn" onclick="placePaper()">Colocar papel de filtro e lavar</button>
+    <div class="instruction" id="instr-text">Prepare o funil de Büchner para a filtração.</div>
+  </div>
+
+  <script>
+    const actionBtn = document.getElementById('action-btn');
+    const instrText = document.getElementById('instr-text');
+    const mixture = document.getElementById('mixture');
+    const filtrate = document.getElementById('filtrate');
+    const crystals = document.getElementById('crystals');
+    const paper = document.getElementById('filter-paper');
+    const pump = document.getElementById('pump');
+    
+    let state = 0; // 0: init, 1: paper placed, 2: filtering
+    let isFiltering = false;
+    let filterProgress = 0; // 0 to 100
+    let filterInterval;
+    let dropInterval;
+
+    function placePaper() {
+      if (state !== 0) return;
+      actionBtn.disabled = true;
+      actionBtn.innerText = "A preparar...";
+      paper.classList.add('placed');
+      
+      setTimeout(() => {
+         // emit wash drops
+         let washes = 0;
+         let wInt = setInterval(() => {
+             const wd = document.createElement('div');
+             wd.className = 'wash-drop';
+             wd.style.left = (45 + Math.random()*10) + '%';
+             wd.style.animation = 'wash-drip 0.4s linear forwards';
+             document.querySelector('.container').appendChild(wd);
+             setTimeout(() => wd.remove(), 400);
+             
+             // also drip to flask
+             const d = document.createElement('div');
+             d.className = 'drop';
+             d.style.animation = 'drip 0.3s linear forwards';
+             document.querySelector('.container').appendChild(d);
+             setTimeout(() => d.remove(), 300);
+             
+             washes++;
+             if (washes > 8) {
+                 clearInterval(wInt);
+                 setTimeout(() => {
+                    state = 1;
+                    mixture.classList.add('visible'); // pour mixture in
+                    actionBtn.disabled = false;
+                    actionBtn.innerText = "Manter premido para filtrar a vácuo";
+                    actionBtn.onclick = null;
+                    actionBtn.onmousedown = startFiltration;
+                    actionBtn.onmouseup = stopFiltration;
+                    actionBtn.onmouseleave = stopFiltration;
+                    actionBtn.ontouchstart = startFiltration;
+                    actionBtn.ontouchend = stopFiltration;
+                    instrText.innerText = "Filtre os cristais obtidos por vácuo.";
+                 }, 1000);
+             }
+         }, 150);
+      }, 500);
+    }
+
+    function startFiltration() {
+      if (state !== 1 || filterProgress >= 100) return;
+      isFiltering = true;
+      actionBtn.innerText = "A filtrar...";
+      instrText.innerText = "O vácuo está a puxar o líquido...";
+      pump.classList.add('active'); // Turn on pump
+      
+      // Animate drops
+      if (!dropInterval) {
+          dropInterval = setInterval(() => {
+             const d = document.createElement('div');
+             d.className = 'drop';
+             d.style.animation = 'drip 0.3s linear forwards';
+             document.querySelector('.container').appendChild(d);
+             setTimeout(() => d.remove(), 300);
+          }, 150);
+      }
+      
+      filterInterval = setInterval(() => {
+          filterProgress += 1;
+          const remainingMixture = 40 * (1 - filterProgress / 100);
+          mixture.style.height = remainingMixture + 'px';
+          filtrate.style.height = (40 * (filterProgress / 100)) + '%';
+          crystals.style.height = (15 * (filterProgress / 100)) + 'px'; // Leave crystals behind
+          
+          if (filterProgress >= 100) {
+              stopFiltration();
+              state = 2;
+              actionBtn.innerText = "Confirmar e Avançar";
+              actionBtn.className = "btn success";
+              actionBtn.onmousedown = null;
+              actionBtn.onmouseup = null;
+              actionBtn.onmouseleave = null;
+              actionBtn.ontouchstart = null;
+              actionBtn.ontouchend = null;
+              actionBtn.onclick = finishStep;
+              instrText.innerText = "Filtração concluída. Cristais isolados no papel de filtro.";
+          }
+      }, 30);
+    }
+
+    function stopFiltration() {
+       if (filterInterval) {
+           clearInterval(filterInterval);
+           filterInterval = null;
+       }
+       if (dropInterval) {
+           clearInterval(dropInterval);
+           dropInterval = null;
+       }
+       
+       pump.classList.remove('active');
+       
+       if (filterProgress < 100 && state === 1) {
+           actionBtn.innerText = "Manter premido para filtrar a vácuo";
+           instrText.innerText = "Filtre os cristais obtidos por vácuo.";
+       }
+       isFiltering = false;
+    }
+    
+    function finishStep() {
+        if (window.parent && window.parent.document) {
+          const buttons = window.parent.document.querySelectorAll('button');
+          buttons.forEach(btn => {
+            if (btn.innerText && btn.innerText.includes('Avançar_Hidden')) {
+              btn.click();
+            }
+          });
+        }
+    }
+  </script>
+</body>
+</html>

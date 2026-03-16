@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background: transparent;
+      color: #333;
+    }
+    .container {
+      position: relative;
+      width: 400px;
+      height: 400px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-end;
+      padding-bottom: 20px;
+    }
+    .ice-bath {
+      width: 250px;
+      height: 120px;
+      border: 3px solid rgba(255, 255, 255, 0.8);
+      border-radius: 10px 10px 50px 50px;
+      background: rgba(200, 240, 255, 0.5); /* Ice water */
+      backdrop-filter: blur(2px);
+      box-shadow: 0 10px 15px rgba(0,0,0,0.1);
+      position: absolute;
+      bottom: 20px;
+      z-index: 1;
+      display: flex;
+      justify-content: center;
+      align-items: flex-end;
+      overflow: hidden;
+    }
+    .ice-cube {
+      width: 40px;
+      height: 40px;
+      background: rgba(255, 255, 255, 0.7);
+      border-radius: 5px;
+      position: absolute;
+      box-shadow: inset 0 0 10px rgba(200, 240, 255, 0.8);
+    }
+    
+    .flask {
+      width: 140px;
+      height: 160px;
+      position: relative;
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(2px);
+      box-shadow: inset -5px -5px 15px rgba(255,255,255,0.2), inset 5px 5px 15px rgba(255,255,255,0.4), 0 10px 15px rgba(0,0,0,0.1);
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      clip-path: polygon(40% 0%, 60% 0%, 60% 30%, 100% 90%, 100% 100%, 0% 100%, 0% 90%, 40% 30%);
+      border-radius: 5px;
+      overflow: hidden;
+      bottom: 15px; /* sit inside bath */
+    }
+    .flask::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 10%;
+      width: 20%;
+      height: 100%;
+      background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.6) 50%, rgba(255,255,255,0) 100%);
+      transform: skewX(-15deg);
+      pointer-events: none;
+    }
+    .flask-liquid {
+      width: 100%;
+      height: 60%;
+      background: linear-gradient(to top, rgba(200, 200, 200, 0.8) 10%, rgba(100, 150, 255, 0.4) 100%);
+      position: absolute;
+      bottom: 0;
+      transition: background 2s;
+    }
+
+    
+    .crystal {
+      width: 10px;
+      height: 3px;
+      background: white;
+      position: absolute;
+      opacity: 0;
+      box-shadow: 0 0 2px rgba(255,255,255,0.8);
+      transform: rotate(45deg);
+    }
+    
+    .thermometer {
+      position: absolute;
+      left: 50px;
+      bottom: 50px;
+      width: 15px;
+      height: 150px;
+      background: rgba(255,255,255,0.5);
+      border: 2px solid rgba(255,255,255,0.8);
+      border-radius: 10px;
+      z-index: 4;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      align-items: center;
+    }
+    .thermometer-bulb {
+      width: 25px;
+      height: 25px;
+      background: #ef4444;
+      border-radius: 50%;
+      position: absolute;
+      bottom: -10px;
+      z-index: 5;
+    }
+    .mercury {
+      width: 6px;
+      height: 60%; /* Initially hot */
+      background: #ef4444;
+      border-radius: 3px;
+      margin-bottom: 5px;
+      transition: height 0.5s linear;
+      z-index: 5;
+    }
+    
+    .controls {
+      margin-top: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 15px;
+    }
+    .btn {
+      background: #3b82f6;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 4px 6px rgba(59, 130, 246, 0.3);
+      transition: all 0.2s;
+    }
+    .btn:active {
+      transform: translateY(2px);
+    }
+    .btn:disabled {
+      background: #94a3b8;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+    .btn.success {
+      background: #10b981;
+      box-shadow: 0 4px 6px rgba(16, 185, 129, 0.3);
+    }
+    
+    .instruction {
+      font-size: 16px;
+      color: #334155;
+      text-align: center;
+      font-weight: 600;
+    }
+    .display {
+      background: #1e293b;
+      padding: 5px 15px;
+      border-radius: 5px;
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 24px;
+      font-weight: bold;
+      color: #38bdf8;
+      box-shadow: inset 0 2px 5px rgba(0,0,0,0.5);
+      position: absolute;
+      top: 20px;
+      right: 20px;
+    }
+
+  </style>
+</head>
+<body>
+  <div class="display" id="display">{{TEMP}} °C</div>
+  <div class="container">
+    <div class="thermometer">
+      <div class="mercury" id="mercury"></div>
+      <div class="thermometer-bulb"></div>
+    </div>
+    
+    <div class="ice-bath">
+      <div class="ice-cube" style="bottom: 10px; left: 20px; transform: rotate(15deg);"></div>
+      <div class="ice-cube" style="bottom: 5px; right: 30px; transform: rotate(-20deg);"></div>
+      <div class="ice-cube" style="bottom: 25px; left: 60px; transform: rotate(45deg);"></div>
+      <div class="ice-cube" style="bottom: 15px; right: 70px; transform: rotate(-10deg);"></div>
+    </div>
+
+    <div class="flask" id="flask">
+      <div class="flask-liquid" id="flask-liquid"></div>
+    </div>
+  </div>
+  
+  <div class="controls">
+    <button class="btn" id="action-btn" onmousedown="startCooling()" onmouseup="stopCooling()" onmouseleave="stopCooling()" ontouchstart="startCooling()" ontouchend="stopCooling()">Manter premido para arrefecer livremente</button>
+    <div class="instruction" id="instr-text">Arrefeça para obter os cristais.</div>
+  </div>
+
+  <script>
+    const actionBtn = document.getElementById('action-btn');
+    const instrText = document.getElementById('instr-text');
+    const display = document.getElementById('display');
+    const flask = document.getElementById('flask');
+    const flaskLiquid = document.getElementById('flask-liquid');
+    const mercury = document.getElementById('mercury');
+    
+    let tempStr = "{{TEMP}}";
+    let temp = parseInt(tempStr);
+    if (isNaN(temp)) temp = 60;
+    
+    let coolingInterval;
+    let crystalsAppearing = false;
+
+    function createCrystal() {
+      const c = document.createElement('div');
+      c.className = 'crystal';
+      c.style.left = (Math.random() * 80 + 10) + 'px';
+      c.style.bottom = (Math.random() * 60 + 5) + 'px';
+      c.style.transform = `rotate(${Math.random() * 180}deg)`;
+      flask.appendChild(c);
+      
+      // fade in
+      let opacity = 0;
+      let fadeInt = setInterval(() => {
+        opacity += 0.1;
+        c.style.opacity = opacity;
+        if (opacity >= 1) clearInterval(fadeInt);
+      }, 100);
+    }
+
+    function startCooling() {
+      if (temp <= 5) return;
+      actionBtn.innerText = "A arrefecer...";
+      
+      coolingInterval = setInterval(() => {
+        if (temp > 5) {
+          temp -= 2;
+        }
+        
+        display.innerText = temp + " °C";
+        mercury.style.height = (temp) + "%";
+        
+        if (temp < 30 && !crystalsAppearing) {
+          crystalsAppearing = true;
+          flaskLiquid.style.background = 'linear-gradient(to top, rgba(230, 230, 230, 0.9) 30%, rgba(150, 200, 255, 0.5) 100%)';
+        }
+        
+        if (crystalsAppearing && temp % 2 === 0) {
+            createCrystal();
+            createCrystal();
+            createCrystal();
+        }
+        
+        if (temp <= 5) {
+          stopCooling();
+          actionBtn.innerText = "Confirmar e Avançar";
+          actionBtn.className = "btn success";
+          actionBtn.onmousedown = null;
+          actionBtn.onmouseup = null;
+          actionBtn.onmouseleave = null;
+          actionBtn.ontouchstart = null;
+          actionBtn.ontouchend = null;
+          actionBtn.onclick = finishStep;
+          instrText.innerText = "Cristalização concluída.";
+        }
+      }, 200);
+    }
+    
+    function stopCooling() {
+        if (coolingInterval) {
+            clearInterval(coolingInterval);
+            coolingInterval = null;
+            if (temp > 5) {
+                actionBtn.innerText = "Manter premido para arrefecer livremente";
+            }
+        }
+    }
+    
+    function finishStep() {
+        if (window.parent && window.parent.document) {
+          const buttons = window.parent.document.querySelectorAll('button');
+          buttons.forEach(btn => {
+            if (btn.innerText && btn.innerText.includes('Avançar_Hidden')) {
+              btn.click();
+            }
+          });
+        }
+    }
+  </script>
+</body>
+</html>

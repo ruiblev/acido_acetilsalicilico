@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background: transparent;
+      color: #333;
+    }
+    .container {
+      position: relative;
+      width: 400px;
+      height: 450px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-end;
+      padding-bottom: 20px;
+    }
+    .bottle {
+      width: 80px;
+      height: 120px;
+      border: 3px solid rgba(255, 255, 255, 0.8);
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(5px);
+      box-shadow: 0 10px 15px rgba(0,0,0,0.1);
+      position: absolute;
+      bottom: 20px;
+      left: 50px;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      overflow: hidden;
+    }
+    .bottle-neck {
+      position: absolute;
+      bottom: 140px;
+      left: 75px; 
+      width: 30px;
+      height: 60px;
+      border-left: 3px solid rgba(255, 255, 255, 0.8);
+      border-right: 3px solid rgba(255, 255, 255, 0.8);
+      background: rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(5px);
+      z-index: 2;
+    }
+    .bottle-liquid {
+      width: 100%;
+      height: 70%;
+      background: rgba(100, 150, 255, 0.6);
+      transition: height 1s linear;
+    }
+    .flask {
+      width: 140px;
+      height: 160px;
+      position: absolute;
+      bottom: 20px;
+      right: 20px;
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(2px);
+      box-shadow: inset -5px -5px 15px rgba(255,255,255,0.2), inset 5px 5px 15px rgba(255,255,255,0.4), 0 10px 15px rgba(0,0,0,0.1);
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      clip-path: polygon(40% 0%, 60% 0%, 60% 30%, 100% 90%, 100% 100%, 0% 100%, 0% 90%, 40% 30%);
+      border-radius: 5px;
+      overflow: hidden;
+    }
+    .flask::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 10%;
+      width: 20%;
+      height: 100%;
+      background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.6) 50%, rgba(255,255,255,0) 100%);
+      transform: skewX(-15deg);
+      pointer-events: none;
+    }
+    .flask-liquid {
+      width: 100%;
+      height: 10%;
+      background: linear-gradient(to top, #f0f0f0 20%, transparent 100%);
+      transition: height 1s linear, background 1s;
+    }
+    .pipette-wrapper {
+      position: absolute;
+      top: 50px; /* Inside bottle */
+      left: 70px; /* Center of bottle neck */
+      width: 40px;
+      height: 200px;
+      z-index: 4;
+      transition: top 1s ease-in-out, left 1s ease-in-out;
+    }
+    .pipette-tube {
+      position: absolute;
+      left: 14px;
+      width: 12px;
+      height: 200px;
+      border: 2px solid rgba(255, 255, 255, 0.8);
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.3);
+      backdrop-filter: blur(2px);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      z-index: 4;
+    }
+    .pipette-bulb {
+      position: absolute;
+      top: 60px;
+      left: 4px;
+      width: 32px;
+      height: 60px;
+      border: 2px solid rgba(255, 255, 255, 0.8);
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.3);
+      backdrop-filter: blur(2px);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      z-index: 3;
+    }
+    .pipette-liquid {
+      width: 100%;
+      height: 0px;
+      background: rgba(100, 150, 255, 0.6);
+      transition: height 0.1s linear;
+    }
+    .pipette-wrapper.moving-up {
+      top: -60px;
+    }
+    .pipette-wrapper.moving-right {
+      top: -60px;
+      left: 207.5px; /* Center of flask neck (Right 70 => left: 400-70-35=295? Flask is at right 40, width 100. Center is right 90 -> left 310. Wrap center is left 310 - 20 = 290.) */
+    }
+    .pipette-wrapper.moving-down {
+      top: 50px;
+      left: 290px;
+    }
+    .drop {
+      width: 10px;
+      height: 15px;
+      background: rgba(100, 150, 255, 0.6);
+      border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+      position: absolute;
+      top: 250px;
+      left: 310px; /* Under pipette in flask */
+      transform: translateX(-50%);
+      opacity: 0;
+      z-index: 3;
+    }
+    @keyframes fall {
+      0% { top: 250px; opacity: 1; }
+      100% { top: 380px; opacity: 0; }
+    }
+    .controls {
+      margin-top: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 15px;
+    }
+    .btn {
+      background: #3b82f6;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 4px 6px rgba(59, 130, 246, 0.3);
+      transition: all 0.2s;
+    }
+    .btn:active {
+      transform: translateY(2px);
+      box-shadow: 0 1px 2px rgba(59, 130, 246, 0.3);
+    }
+    .btn.success {
+      background: #10b981;
+      box-shadow: 0 4px 6px rgba(16, 185, 129, 0.3);
+    }
+    .btn:disabled {
+      background: #94a3b8;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+    .instruction {
+      font-size: 14px;
+      color: #64748b;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="bottle-neck"></div>
+    <div class="bottle">
+      <div class="bottle-liquid" id="bottle-liquid"></div>
+    </div>
+
+    <div class="pipette-wrapper" id="pipette">
+      <div class="pipette-tube">
+        <div class="pipette-liquid" id="pipette-liquid-tube"></div>
+      </div>
+      <div class="pipette-bulb">
+        <div class="pipette-liquid" id="pipette-liquid-bulb"></div>
+      </div>
+    </div>
+    
+    <div class="drop" id="drop"></div>
+
+    <div class="flask">
+      <div class="flask-liquid" id="flask-liquid"></div>
+    </div>
+  </div>
+  
+  <div class="controls">
+    <button class="btn" id="action-btn" onmousedown="startAction()" onmouseup="stopAction()" onmouseleave="stopAction()" ontouchstart="startAction()" ontouchend="stopAction()">Manter premido para absorver</button>
+    <div class="instruction" id="instr-text">Meça 5 mL na pipeta a partir da garrafa.</div>
+  </div>
+
+  <script>
+    let state = 0; // 0 = pulling, 1 = moving out, 2 = moving above flask, 3 = moving in flask, 4 = pouring, 5 = finished
+    const pipette = document.getElementById('pipette');
+    const tubeLiquid = document.getElementById('pipette-liquid-tube');
+    const bulbLiquid = document.getElementById('pipette-liquid-bulb');
+    const flaskLiquid = document.getElementById('flask-liquid');
+    const bottleLiquid = document.getElementById('bottle-liquid');
+    const actionBtn = document.getElementById('action-btn');
+    const instrText = document.getElementById('instr-text');
+    const drop = document.getElementById('drop');
+
+    let liquidLevel = 0; // px
+    let actionInterval = null;
+
+    function updatePipetteLiquid(lvl) {
+      tubeLiquid.style.transition = 'none';
+      bulbLiquid.style.transition = 'none';
+      tubeLiquid.style.height = lvl + 'px';
+      
+      // Bulb is from bottom 80px to bottom 140px (since tube is 200, bulb top 60 -> bottom 140, height 60, wait! top 60, height 60 means bottom is 80px to 140px)
+      if (lvl > 80) {
+        let bHeight = lvl - 80;
+        if (bHeight > 60) bHeight = 60;
+        bulbLiquid.style.height = bHeight + 'px';
+      } else {
+        bulbLiquid.style.height = '0px';
+      }
+    }
+
+    function startAction() {
+      if (state >= 1 && state <= 3) return; // ignore clicks during movement
+      if (state === 5) {
+          if (window.parent && window.parent.document) {
+            const buttons = window.parent.document.querySelectorAll('button');
+            buttons.forEach(btn => {
+              if (btn.innerText && btn.innerText.includes('Avançar_Hidden')) {
+                btn.click();
+              }
+            });
+          }
+          return;
+      }
+      
+      if (actionInterval) return;
+      
+      if (state === 0) {
+        actionInterval = setInterval(() => {
+          liquidLevel += 2;
+          updatePipetteLiquid(liquidLevel);
+          bottleLiquid.style.height = (70 - (liquidLevel / 160) * 15) + '%';
+          
+          if (liquidLevel >= 150) { // 150px is full enough
+            stopAction();
+            state = 1;
+            actionBtn.innerText = "A mover pipeta...";
+            actionBtn.disabled = true;
+            instrText.innerText = "5 mL medidos. A transferir para erlenmeyer...";
+            
+            pipette.classList.add('moving-up');
+            setTimeout(() => {
+              state = 2;
+              pipette.classList.add('moving-right');
+              setTimeout(() => {
+                state = 3;
+                pipette.classList.add('moving-down');
+                setTimeout(() => {
+                   state = 4;
+                   actionBtn.disabled = false;
+                   actionBtn.innerText = "Manter premido para verter";
+                   instrText.innerText = "Verta o líquido para o erlenmeyer.";
+                   drop.style.animation = 'fall 1s infinite linear';
+                   drop.style.opacity = '0';
+                }, 1000);
+              }, 1000);
+            }, 1000);
+          }
+        }, 30);
+      } else if (state === 4) {
+        drop.style.opacity = '1';
+        actionInterval = setInterval(() => {
+          liquidLevel -= 2;
+          updatePipetteLiquid(liquidLevel);
+          
+          let flaskLvl = 10 + ((150 - liquidLevel) / 150) * 30; 
+          flaskLiquid.style.transition = 'none';
+          flaskLiquid.style.height = flaskLvl + '%';
+          flaskLiquid.style.background = `linear-gradient(to top, rgba(200, 200, 200, 0.8) 10%, rgba(100, 150, 255, 0.4) 100%)`;
+          
+          if (liquidLevel <= 0) {
+             stopAction();
+             drop.style.animation = 'none';
+             drop.style.opacity = '0';
+             
+             state = 5;
+             actionBtn.innerText = "Confirmar e Avançar";
+             actionBtn.className = "btn success";
+             actionBtn.onmousedown = null;
+             actionBtn.onmouseup = null;
+             actionBtn.onmouseleave = null;
+             actionBtn.ontouchstart = null;
+             actionBtn.ontouchend = null;
+             actionBtn.onclick = startAction;
+             instrText.innerText = "Adição concluída.";
+          }
+        }, 30);
+      }
+    }
+
+    function stopAction() {
+      if (actionInterval) {
+        clearInterval(actionInterval);
+        actionInterval = null;
+      }
+      if (state === 4) {
+         drop.style.opacity = '0';
+      }
+    }
+  </script>
+</body>
+</html>

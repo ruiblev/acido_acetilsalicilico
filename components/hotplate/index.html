@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background: transparent;
+      color: #333;
+    }
+    .container {
+      position: relative;
+      width: 400px;
+      height: 400px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-end;
+      padding-bottom: 20px;
+    }
+    .flask {
+      width: 140px;
+      height: 160px;
+      position: relative;
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(2px);
+      box-shadow: inset -5px -5px 15px rgba(255,255,255,0.2), inset 5px 5px 15px rgba(255,255,255,0.4), 0 10px 15px rgba(0,0,0,0.1);
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      clip-path: polygon(40% 0%, 60% 0%, 60% 30%, 100% 90%, 100% 100%, 0% 100%, 0% 90%, 40% 30%);
+      border-radius: 5px;
+      overflow: hidden;
+      bottom: 15px; /* sit on hotplate */
+    }
+    .flask::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 10%;
+      width: 20%;
+      height: 100%;
+      background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.6) 50%, rgba(255,255,255,0) 100%);
+      transform: skewX(-15deg);
+      pointer-events: none;
+    }
+    .hotplate {
+      width: 250px;
+      height: 60px;
+      background: #e2e8f0;
+      border-radius: 10px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.2), inset 0 2px 0 rgba(255,255,255,0.8);
+      position: relative;
+      z-index: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .plate {
+      position: absolute;
+      top: -10px;
+      width: 150px;
+      height: 10px;
+      background: #cbd5e1;
+      border-radius: 50%;
+      transition: background 1s;
+    }
+    .plate.hot {
+      background: #f87171;
+      box-shadow: 0 -5px 15px rgba(248, 113, 113, 0.5);
+    }
+    .display {
+      background: #1e293b;
+      padding: 5px 15px;
+      border-radius: 5px;
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 24px;
+      font-weight: bold;
+      color: #38bdf8;
+      box-shadow: inset 0 2px 5px rgba(0,0,0,0.5);
+    }
+    .controls {
+      margin-top: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 15px;
+    }
+    .btn {
+      background: #3b82f6;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 4px 6px rgba(59, 130, 246, 0.3);
+      transition: all 0.2s;
+    }
+    .btn:active {
+      transform: translateY(2px);
+    }
+    .btn:disabled {
+      background: #94a3b8;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+    .btn.success {
+      background: #10b981;
+      box-shadow: 0 4px 6px rgba(16, 185, 129, 0.3);
+    }
+    .btn.success:hover { background: #059669; }
+    
+    .instruction {
+      font-size: 16px;
+      color: #334155;
+      text-align: center;
+      font-weight: 600;
+    }
+    .bubble {
+      width: 6px;
+      height: 6px;
+      background: rgba(255,255,255,0.8);
+      border-radius: 50%;
+      position: absolute;
+      bottom: 5px;
+      opacity: 0;
+      animation: rise 1s infinite ease-in;
+    }
+    @keyframes rise {
+      0% { bottom: 5px; opacity: 1; transform: scale(0.5); }
+      100% { bottom: 50px; opacity: 0; transform: scale(1.5); }
+    }
+    
+    .flask-liquid {
+      width: 100%;
+      height: 45%;
+      background: linear-gradient(to top, rgba(200, 200, 200, 0.8) 10%, rgba(100, 150, 255, 0.4) 100%);
+      position: absolute;
+      bottom: 0;
+    }
+    .thermometer {
+      position: absolute;
+      left: 170px;
+      bottom: 130px;
+      width: 15px;
+      height: 120px;
+      background: rgba(255,255,255,0.5);
+      border: 2px solid rgba(255,255,255,0.8);
+      border-radius: 10px;
+      z-index: 4;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      align-items: center;
+    }
+    .thermometer-bulb {
+      width: 25px;
+      height: 25px;
+      background: #ef4444;
+      border-radius: 50%;
+      position: absolute;
+      bottom: -10px;
+      z-index: 5;
+    }
+    .mercury {
+      width: 6px;
+      height: 20%;
+      background: #ef4444;
+      border-radius: 3px;
+      margin-bottom: 5px;
+      transition: height 0.5s linear;
+      z-index: 5;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="thermometer">
+      <div class="mercury" id="mercury"></div>
+      <div class="thermometer-bulb"></div>
+    </div>
+    
+    <div class="flask" id="flask">
+      <div class="flask-liquid"></div>
+    </div>
+    
+    <div class="hotplate">
+      <div class="plate" id="plate"></div>
+      <div class="display" id="display">22 °C</div>
+    </div>
+  </div>
+  
+  <div class="controls">
+    <button class="btn" id="action-btn" onmousedown="startHeating()" onmouseup="stopHeating()" onmouseleave="stopHeating()" ontouchstart="startHeating()" ontouchend="stopHeating()">Manter premido para aquecer</button>
+    <button class="btn warning" id="hold-btn" style="display: none;" onclick="holdTemperature()">Manter temperatura (10 min)</button>
+    <button class="btn success" id="next-btn" style="display: none;" onclick="finishStep()">Confirmar Temperatura e Avançar</button>
+    <div class="instruction" id="instr-text">Aqueça a 50-60°C durante 10 minutos (simulado).</div>
+  </div>
+
+  <script>
+    const actionBtn = document.getElementById('action-btn');
+    const instrText = document.getElementById('instr-text');
+    const display = document.getElementById('display');
+    const plate = document.getElementById('plate');
+    const flask = document.getElementById('flask');
+    const mercury = document.getElementById('mercury');
+    
+    let temp = 22;
+    let heatingInterval;
+    let time = 0;
+
+    function createBubble() {
+      const b = document.createElement('div');
+      b.className = 'bubble';
+      b.style.left = (Math.random() * 80 + 10) + 'px';
+      b.style.animationDuration = (Math.random() * 0.5 + 0.5) + 's';
+      flask.appendChild(b);
+      setTimeout(() => b.remove(), 1000);
+    }
+
+    let isHolding = false;
+
+    function startHeating() {
+      if (temp >= 90 || isHolding) return; // limit sim to 90
+      actionBtn.innerText = "A aquecer...";
+      plate.classList.add('hot');
+      
+      heatingInterval = setInterval(() => {
+        temp += 0.5;
+        time += 0.2; // simular tempo a passar mais suavemente
+        
+        display.innerText = Math.floor(temp) + " °C";
+        mercury.style.height = Math.floor(temp) + "%";
+        
+        if (temp > 40) {
+          createBubble();
+          if (temp > 70) createBubble();
+        }
+        
+        // Ativar manter
+        if (temp >= 50 && temp <= 60 && !isHolding) {
+           document.getElementById('hold-btn').style.display = 'inline-block';
+        } else if (temp > 60 && !isHolding) {
+           document.getElementById('hold-btn').style.display = 'none';
+        }
+        
+      }, 150); // Simulação fluida
+    }
+    
+    function stopHeating() {
+      if (heatingInterval && !isHolding) {
+        clearInterval(heatingInterval);
+        heatingInterval = null;
+        actionBtn.innerText = "Manter premido para aquecer";
+        plate.classList.remove('hot');
+      }
+    }
+    
+    function holdTemperature() {
+        if (isHolding) return;
+        isHolding = true;
+        stopHeating();
+        
+        actionBtn.style.display = 'none';
+        document.getElementById('hold-btn').style.display = 'none';
+        
+        plate.classList.add('hot'); // stay hot
+        let holdTime = 0;
+        
+        let holdInt = setInterval(() => {
+            holdTime += 1; // 1 min per tick
+            instrText.innerText = `A manter temperatura a ${Math.floor(temp)}°C. Tempo: ${holdTime} / 10 min`;
+            
+            if (holdTime < 10) {
+               createBubble();
+            }
+            
+            if (holdTime >= 10) {
+                clearInterval(holdInt);
+                plate.classList.remove('hot');
+                instrText.innerText = "Aquecimento concluído.";
+                document.getElementById('next-btn').style.display = 'inline-block';
+            }
+        }, 300);
+    }
+    
+    function finishStep() {
+        if (window.parent && window.parent.document) {
+          // Gravar temperatura em app.py
+          const inputs = window.parent.document.querySelectorAll('input[aria-label="Temp_Hidden"]');
+          if (inputs.length > 0) {
+            let input = inputs[0];
+            let setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value").set;
+            setter.call(input, Math.floor(temp).toString());
+            input.dispatchEvent(new Event('input', { bubbles: true }));
+          }
+
+          setTimeout(() => {
+            const buttons = window.parent.document.querySelectorAll('button');
+            buttons.forEach(btn => {
+              if (btn.innerText && btn.innerText.includes('Avançar_Hidden')) {
+                btn.click();
+              }
+            });
+          }, 300);
+        }
+    }
+  </script>
+</body>
+</html>
