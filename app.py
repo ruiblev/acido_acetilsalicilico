@@ -125,7 +125,7 @@ ALL_MATERIALS = [
     "2 Copos de precipitação de 600 mL",
     "Anidrido acético (líquido)",
     "Balança",
-    "Bomba de vácuo com Kitasato e Guko",
+    "Bomba de vácuo com Kitasato",
     "Erlenmeyer de 100 mL",
     "Espátula",
     "Estufa",
@@ -161,9 +161,9 @@ PRATICO_CORRECT_ACTIONS = {
 PRATICO_CORRECT_MATERIALS = {
     1: ["Balança", "Erlenmeyer de 100 mL", "Espátula", "Funil de pós", "Ácido salicílico (sólido)"],
     2: ["Erlenmeyer de 100 mL", "Anidrido acético (líquido)", "Pipeta de 5 mL", "Pompete/macrocontrolador", "Ácido sulfúrico 96% (frasco conta-gotas)"],
-    3: ["Erlenmeyer de 100 mL", "Placa de aquecimento", "2 Copos de precipitação de 600 mL", "Termómetro", "Água destilada (esguicho)", "Pipeta de 2 mL", "Pompete/macrocontrolador", "Vareta de vidro"],
-    4: ["Erlenmeyer de 100 mL", "Proveta de 25 mL", "2 Copos de precipitação de 600 mL", "Gelo", "Água destilada (esguicho)"],
-    5: ["Erlenmeyer de 100 mL", "Funil de Büchner", "Bomba de vácuo com Kitasato e Guko", "Papel de filtro", "Água destilada (esguicho)", "Vareta de vidro"],
+    3: ["Erlenmeyer de 100 mL", "Placa de aquecimento", "Termómetro", "Água destilada (esguicho)", "Pipeta de 2 mL", "Pompete/macrocontrolador", "Vareta de vidro"],
+    4: ["Erlenmeyer de 100 mL", "Proveta de 25 mL", "Gelo", "Água destilada (esguicho)", "Termómetro"],
+    5: ["Erlenmeyer de 100 mL", "Funil de Büchner", "Bomba de vácuo com Kitasato", "Papel de filtro", "Água destilada (esguicho)", "Vareta de vidro"],
     6: ["Vidro de relógio", "Espátula", "Papel de filtro", "Estufa", "Pinça", "Balança"]
 }
 
