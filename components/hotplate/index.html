@@ -10,7 +10,7 @@
       flex-direction: column;
       align-items: center;
       background: transparent;
-      color: #333;
+      color: #f8fafc;
     }
     .container {
       position: relative;
@@ -36,7 +36,7 @@
       clip-path: polygon(40% 0%, 60% 0%, 60% 30%, 100% 90%, 100% 100%, 0% 100%, 0% 90%, 40% 30%);
       border-radius: 5px;
       overflow: hidden;
-      bottom: 15px; /* sit on hotplate */
+      bottom: 15px;
     }
     .flask::after {
       content: '';
@@ -103,9 +103,7 @@
       box-shadow: 0 4px 6px rgba(59, 130, 246, 0.3);
       transition: all 0.2s;
     }
-    .btn:active {
-      transform: translateY(2px);
-    }
+    .btn:active { transform: translateY(2px); }
     .btn:disabled {
       background: #94a3b8;
       cursor: not-allowed;
@@ -117,10 +115,9 @@
       box-shadow: 0 4px 6px rgba(16, 185, 129, 0.3);
     }
     .btn.success:hover { background: #059669; }
-    
     .instruction {
       font-size: 16px;
-      color: #334155;
+      color: #cbd5e1;
       text-align: center;
       font-weight: 600;
     }
@@ -138,7 +135,6 @@
       0% { bottom: 5px; opacity: 1; transform: scale(0.5); }
       100% { bottom: 50px; opacity: 0; transform: scale(1.5); }
     }
-    
     .flask-liquid {
       width: 100%;
       height: 45%;
@@ -229,13 +225,13 @@
     let isHolding = false;
 
     function startHeating() {
-      if (temp >= 90 || isHolding) return; // limit sim to 90
+      if (temp >= 90 || isHolding) return;
       actionBtn.innerText = "A aquecer...";
       plate.classList.add('hot');
       
       heatingInterval = setInterval(() => {
         temp += 0.5;
-        time += 0.2; // simular tempo a passar mais suavemente
+        time += 0.2;
         
         display.innerText = Math.floor(temp) + " °C";
         mercury.style.height = Math.floor(temp) + "%";
@@ -245,14 +241,13 @@
           if (temp > 70) createBubble();
         }
         
-        // Ativar manter
         if (temp >= 50 && temp <= 60 && !isHolding) {
            document.getElementById('hold-btn').style.display = 'inline-block';
         } else if (temp > 60 && !isHolding) {
            document.getElementById('hold-btn').style.display = 'none';
         }
         
-      }, 150); // Simulação fluida
+      }, 150);
     }
     
     function stopHeating() {
@@ -272,11 +267,11 @@
         actionBtn.style.display = 'none';
         document.getElementById('hold-btn').style.display = 'none';
         
-        plate.classList.add('hot'); // stay hot
+        plate.classList.add('hot');
         let holdTime = 0;
         
         let holdInt = setInterval(() => {
-            holdTime += 1; // 1 min per tick
+            holdTime += 1;
             instrText.innerText = `A manter temperatura a ${Math.floor(temp)}°C. Tempo: ${holdTime} / 10 min`;
             
             if (holdTime < 10) {
@@ -291,25 +286,40 @@
             }
         }, 300);
     }
-    
     function finishStep() {
+        const btn = document.getElementById('action-btn') || document.getElementById('next-btn') || document.getElementById('pour-btn');
+        if (btn) {
+           btn.innerText = "A aguardar...";
+           btn.disabled = true;
+           btn.style.pointerEvents = "none";
+        }
         if (window.parent && window.parent.document) {
-          // Gravar temperatura em app.py
-          const inputs = window.parent.document.querySelectorAll('input[aria-label="Temp_Hidden"]');
-          if (inputs.length > 0) {
-            let input = inputs[0];
-            let setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value").set;
-            setter.call(input, Math.floor(temp).toString());
-            input.dispatchEvent(new Event('input', { bubbles: true }));
+          const buttons = window.parent.document.querySelectorAll('button');
+          buttons.forEach(b => {
+             if (b.textContent && (b.textContent.includes('Avançar_Hidden') || b.textContent.trim() === 'Avançar')) {
+                 b.click();
+             }
+          });
+          
+          // Legacy hotplate support
+          const tempInputs = window.parent.document.querySelectorAll('input[aria-label="Temp_Hidden"]');
+          if (tempInputs.length > 0 && typeof temp !== 'undefined') {
+            const tempInput = tempInputs[0];
+            const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value").set;
+            setter.call(tempInput, Math.floor(temp).toString());
+            tempInput.dispatchEvent(new Event('input', { bubbles: true }));
           }
-
+        }
+    }
+          // Then trigger step advance via step_advance input
           setTimeout(() => {
-            const buttons = window.parent.document.querySelectorAll('button');
-            buttons.forEach(btn => {
-              if (btn.innerText && btn.innerText.includes('Avançar_Hidden')) {
-                btn.click();
-              }
-            });
+            const inputs = window.parent.document.querySelectorAll('input[aria-label="step_advance"]');
+            if (inputs.length > 0) {
+              const input = inputs[0];
+              const nativeSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
+              nativeSetter.call(input, 'do');
+              input.dispatchEvent(new Event('input', { bubbles: true }));
+            }
           }, 300);
         }
     }

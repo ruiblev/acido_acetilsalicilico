@@ -22,72 +22,62 @@
       justify-content: flex-end;
       padding-bottom: 20px;
     }
-    .beaker {
+    .pipette-wrapper {
+      position: absolute;
+      top: 0px; 
+      left: 180px; 
       width: 40px;
-      height: 140px;
-      border: 3px solid rgba(255, 255, 255, 0.8);
-      border-radius: 2px;
-      border-top: none;
-      background: rgba(255, 255, 255, 0.2);
-      backdrop-filter: blur(5px);
-      position: absolute;
-      top: 10px;
-      left: 90px;
-      z-index: 3;
-      transform-origin: top right;
-      transition: transform 1s ease-in-out, left 1s, top 1s;
-    }
-    .proveta-base {
-      position: absolute;
-      bottom: -5px;
-      left: -10px;
-      width: 60px;
-      height: 6px;
-      background: rgba(255, 255, 255, 0.9);
-      border-radius: 3px;
+      height: 200px;
       z-index: 4;
+      transition: top 1s ease-in-out;
     }
-    .beaker-inner {
+    .pipette-tube {
       position: absolute;
-      top: 0;
-      bottom: 0px;
-      left: 0;
-      right: 0;
+      left: 14px;
+      width: 12px;
+      height: 200px;
+      border: 2px solid rgba(255, 255, 255, 0.8);
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.3);
+      backdrop-filter: blur(2px);
       overflow: hidden;
       display: flex;
       flex-direction: column;
       justify-content: flex-end;
+      z-index: 4;
     }
-    .beaker-liquid {
-      width: 100%;
-      height: 80%;
-      background: rgba(100, 200, 255, 0.5); /* Water */
-      transition: height 1s linear;
-    }
-    .graduations {
+    .pipette-bulb {
       position: absolute;
-      left: 0;
-      top: 15px;
-      bottom: 20px;
-      width: 10px;
-      background: repeating-linear-gradient(
-        to bottom,
-        rgba(255, 255, 255, 0.9) 0,
-        rgba(255, 255, 255, 0.9) 2px,
-        transparent 2px,
-        transparent 15px
-      );
-      z-index: 5;
+      top: 60px;
+      left: 4px;
+      width: 32px;
+      height: 60px;
+      border: 2px solid rgba(255, 255, 255, 0.8);
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.3);
+      backdrop-filter: blur(2px);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      z-index: 3;
     }
-    .beaker.pouring {
-      transform: rotate(85deg);
-      left: 150px;
-      top: 150px;
+    .pipette-liquid {
+      width: 100%;
+      height: 150px;
+      background: rgba(100, 200, 255, 0.6);
+      transition: height 0.05s linear;
     }
+    .pipette-wrapper.pouring {
+      top: 50px;
+    }
+
     .flask {
       width: 140px;
       height: 160px;
-      position: relative;
+      position: absolute;
+      bottom: 20px;
+      left: 130px;
       background: rgba(255, 255, 255, 0.1);
       backdrop-filter: blur(2px);
       box-shadow: inset -5px -5px 15px rgba(255,255,255,0.2), inset 5px 5px 15px rgba(255,255,255,0.4), 0 10px 15px rgba(0,0,0,0.1);
@@ -98,7 +88,6 @@
       clip-path: polygon(40% 0%, 60% 0%, 60% 30%, 100% 90%, 100% 100%, 0% 100%, 0% 90%, 40% 30%);
       border-radius: 5px;
       overflow: hidden;
-      margin-bottom: 20px;
     }
     .flask::after {
       content: '';
@@ -117,10 +106,7 @@
       background: linear-gradient(to top, rgba(200, 200, 200, 0.8) 10%, rgba(100, 150, 255, 0.4) 100%);
       position: absolute;
       bottom: 0;
-      transition: height 1s linear;
-    }
-    .flask-liquid.filled {
-      height: 55%;
+      transition: height 0.05s linear;
     }
 
     .stream {
@@ -128,18 +114,18 @@
       height: 0px;
       background: rgba(100, 200, 255, 0.5);
       position: absolute;
-      top: 150px;
-      left: 190px;
+      top: 250px;
+      left: 197px;
       z-index: 1;
-      transition: height 0.5s linear, top 0.5s linear;
+      transition: height 0.1s linear, top 0.1s linear;
       transform-origin: top;
     }
     .stream.active {
-      height: 100px;
+      height: 80px;
     }
     .stream.finishing {
       height: 0px;
-      top: 250px;
+      top: 330px;
     }
     
     .controls {
@@ -178,11 +164,12 @@
 </head>
 <body>
   <div class="container">
-    <div class="beaker" id="beaker">
-      <div class="graduations"></div>
-      <div class="proveta-base"></div>
-      <div class="beaker-inner">
-         <div class="beaker-liquid" id="beaker-liquid"></div>
+    <div class="pipette-wrapper" id="pipette">
+      <div class="pipette-tube">
+        <div class="pipette-liquid" id="pipette-liquid-tube"></div>
+      </div>
+      <div class="pipette-bulb">
+        <div class="pipette-liquid" id="pipette-liquid-bulb"></div>
       </div>
     </div>
     <div class="stream" id="stream"></div>
@@ -197,8 +184,9 @@
   </div>
 
   <script>
-    const beaker = document.getElementById('beaker');
-    const beakerLiquid = document.getElementById('beaker-liquid');
+    const pipette = document.getElementById('pipette');
+    const tubeLiquid = document.getElementById('pipette-liquid-tube');
+    const bulbLiquid = document.getElementById('pipette-liquid-bulb');
     const flaskLiquid = document.getElementById('flask-liquid');
     const stream = document.getElementById('stream');
     const actionBtn = document.getElementById('action-btn');
@@ -207,21 +195,41 @@
     let isPouring = false;
     let pourInterval;
     let preparationTimeout;
+    
+    function updatePipetteLiquid(lvl) {
+      if (lvl < 0) lvl = 0;
+      tubeLiquid.style.transition = 'none';
+      bulbLiquid.style.transition = 'none';
+      tubeLiquid.style.height = lvl + 'px';
+      
+      if (lvl > 80) {
+        let bHeight = lvl - 80;
+        if (bHeight > 60) bHeight = 60;
+        bulbLiquid.style.height = bHeight + 'px';
+      } else {
+        bulbLiquid.style.height = '0px';
+      }
+    }
+    
+    updatePipetteLiquid(150);
 
     function startPour() {
       if (pourAmount >= 100) return;
       isPouring = true;
-      beaker.classList.add('pouring');
+      pipette.classList.add('pouring');
       
       preparationTimeout = setTimeout(() => {
         if (!isPouring) return;
         stream.classList.add('active');
+        stream.classList.remove('finishing');
+        stream.style.top = '250px';
         
         pourInterval = setInterval(() => {
            pourAmount += 2;
-           beakerLiquid.style.transition = 'none';
+           let liquidLevel = 150 - (pourAmount * 1.5);
+           updatePipetteLiquid(liquidLevel);
+           
            flaskLiquid.style.transition = 'none';
-           beakerLiquid.style.height = (100 - pourAmount) + '%';
            flaskLiquid.style.height = (40 + pourAmount * 0.15) + '%'; 
            
            if (pourAmount >= 100) {
@@ -246,12 +254,11 @@
            clearInterval(pourInterval);
            pourInterval = null;
        }
-       stream.classList.remove('active');
-       stream.classList.remove('finishing');
-       beaker.classList.remove('pouring');
        if (pourAmount < 100) {
-           // hide stream
+           stream.classList.remove('active');
+           stream.classList.add('finishing');
        }
+       pipette.classList.remove('pouring');
     }
     function finishStep() {
         const btn = document.getElementById('action-btn') || document.getElementById('next-btn') || document.getElementById('pour-btn');

@@ -10,7 +10,7 @@
       flex-direction: column;
       align-items: center;
       background: transparent;
-      color: #333;
+      color: #f8fafc;
     }
     .container {
       position: relative;
@@ -31,6 +31,7 @@
       backdrop-filter: blur(5px);
       position: absolute;
       top: 200px;
+      left: 160px;
       z-index: 4;
       display: flex;
       flex-direction: column;
@@ -47,6 +48,7 @@
       background: rgba(255, 255, 255, 0.2);
       position: absolute;
       top: 260px;
+      left: 192.5px;
       z-index: 3;
     }
     .filter-paper {
@@ -55,7 +57,7 @@
       background: #f8fafc;
       border-radius: 50%;
       position: absolute;
-      bottom: 80px; /* Starts above funnel */
+      bottom: 80px; 
       opacity: 0;
       z-index: 5;
       transition: bottom 0.5s ease-in, opacity 0.5s;
@@ -66,16 +68,12 @@
     }
     .mixture {
       width: 70px;
-      height: 40px;
+      height: 0px; 
       background: linear-gradient(to top, rgba(230,230,230,0.9), rgba(150,200,255,0.5));
       position: absolute;
       bottom: 10px;
       z-index: 4;
-      opacity: 0; /* Hidden initially */
-      transition: opacity 1s;
-    }
-    .mixture.visible {
-      opacity: 1;
+      transition: height 1.5s linear;
     }
     .crystals {
       width: 60px;
@@ -93,7 +91,7 @@
       height: 160px;
       position: absolute;
       bottom: 20px;
-      left: 50%;
+      left: 200px;
       transform: translateX(-50%);
       background: rgba(255, 255, 255, 0.1);
       backdrop-filter: blur(2px);
@@ -117,7 +115,13 @@
       transform: skewX(-15deg);
       pointer-events: none;
     }
-
+    .filtrate {
+      width: 100%;
+      height: 0%;
+      background: rgba(150, 200, 255, 0.5);
+      position: absolute;
+      bottom: 0;
+    }
     .side-arm {
       width: 40px;
       height: 10px;
@@ -125,20 +129,20 @@
       border-bottom: 3px solid rgba(255, 255, 255, 0.8);
       background: rgba(255, 255, 255, 0.2);
       position: absolute;
-      top: 330px; /* High up on the neck */
-      left: 175px; /* Center 200 - width/2? 50% of 400 is 200. Neck center is 200. Width 140. Neck is 40% to 60%. Neck width is 28px? 0.2 * 140. */
+      top: 330px; 
+      left: 175px; 
       z-index: 1;
     }
     .hose {
       position: absolute;
-      top: 330px;
-      left: 85px;
-      width: 90px;
-      height: 110px;
-      border: 8px solid #1e293b;
+      top: 335px;
+      left: 100px;
+      width: 75px;
+      height: 40px;
+      border: 6px solid #334155;
       border-top: none;
-      border-right: none;
-      border-radius: 0 0 0 30px;
+      border-left: none;
+      border-radius: 0 0 20px 0;
       z-index: 0;
     }
     .vacuum-pump {
@@ -147,15 +151,15 @@
       background: linear-gradient(to bottom, #475569, #1e293b);
       border-radius: 8px;
       position: absolute;
-      bottom: 20px;
-      right: 20px;
+      bottom: 50px;
+      left: 40px;
       z-index: 1;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-      border: 2px solid #64748b;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+      border: 2px solid #94a3b8;
     }
     .pump-dial {
       width: 24px;
@@ -181,13 +185,6 @@
       transform: rotate(45deg);
     }
     
-    .filtrate {
-      width: 100%;
-      height: 0%;
-      background: rgba(150, 200, 255, 0.5);
-      position: absolute;
-      bottom: 0;
-    }
     .drop {
       width: 8px;
       height: 15px;
@@ -195,7 +192,7 @@
       border-radius: 50%;
       position: absolute;
       top: 310px;
-      left: 50%;
+      left: 200px;
       transform: translateX(-50%);
       opacity: 0;
       z-index: 3;
@@ -205,22 +202,42 @@
       100% { top: 420px; opacity: 0; }
     }
     
-    .wash-drop {
-      width: 6px;
-      height: 10px;
-      background: rgba(100, 200, 255, 0.5);
-      border-radius: 50%;
-      position: absolute;
-      top: 160px;
-      left: 50%;
-      transform: translateX(-50%);
+    /* Pouring Erlenmeyer Animation elements */
+    .pour-flask {
+      width: 80px; height: 100px;
+      background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(2px);
+      box-shadow: inset -3px -3px 10px rgba(255,255,255,0.2), inset 3px 3px 10px rgba(255,255,255,0.4), 0 5px 10px rgba(0,0,0,0.1);
+      clip-path: polygon(40% 0%, 60% 0%, 60% 30%, 100% 90%, 100% 100%, 0% 100%, 0% 90%, 40% 30%);
+      border-radius: 5px; overflow: hidden;
+      position: absolute; top: 50px; left: 80px;
+      z-index: 10; transform-origin: top right;
+      transition: transform 1s ease-in-out, left 1s, top 1s, opacity 0.5s;
+      display: flex; flex-direction: column; justify-content: flex-end;
       opacity: 0;
-      z-index: 5;
     }
-    @keyframes wash-drip {
-      0% { top: 160px; opacity: 1; }
-      100% { top: 210px; opacity: 0; }
+    .pour-flask::after {
+      content: ''; position: absolute; top: 0; left: 10%; width: 20%; height: 100%;
+      background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.6) 50%, rgba(255,255,255,0) 100%);
+      transform: skewX(-15deg); pointer-events: none;
     }
+    .pour-flask.visible { opacity: 1; }
+    .pour-flask.pouring { transform: rotate(100deg); left: 110px; top: 150px; }
+    
+    .pour-liquid {
+      width: 100%; height: 50%; /* fills the bottom wide part */
+      background: linear-gradient(to top, rgba(230,230,230,0.9), rgba(150,200,255,0.5));
+      transition: height 1s linear;
+    }
+
+    .pour-stream {
+      width: 8px; height: 0px;
+      background: linear-gradient(to top, rgba(230,230,230,0.9), rgba(150,200,255,0.5));
+      position: absolute; top: 150px; left: 196px;
+      z-index: 9; transition: height 0.5s linear, top 0.5s linear;
+      transform-origin: top;
+    }
+    .pour-stream.active { height: 75px; } /* reaches 225px */
+    .pour-stream.finishing { height: 0px; top: 225px; }
 
     
     .controls {
@@ -257,7 +274,7 @@
     }
     .instruction {
       font-size: 16px;
-      color: #334155;
+      color: #f1f5f9;
       text-align: center;
       font-weight: 600;
     }
@@ -265,6 +282,11 @@
 </head>
 <body>
   <div class="container">
+    <div class="pour-flask" id="pour-flask">
+      <div class="pour-liquid" id="pour-liquid"></div>
+    </div>
+    <div class="pour-stream" id="pour-stream"></div>
+
     <div class="funnel">
       <div class="filter-paper" id="filter-paper"></div>
       <div class="mixture" id="mixture"></div>
@@ -287,7 +309,7 @@
   </div>
   
   <div class="controls">
-    <button class="btn" id="action-btn" onclick="placePaper()">Colocar papel de filtro e lavar</button>
+    <button class="btn" id="action-btn" onclick="placePaperAndPour()">Colocar papel de filtro e transferir</button>
     <div class="instruction" id="instr-text">Prepare o funil de Büchner para a filtração.</div>
   </div>
 
@@ -300,65 +322,68 @@
     const paper = document.getElementById('filter-paper');
     const pump = document.getElementById('pump');
     
-    let state = 0; // 0: init, 1: paper placed, 2: filtering
+    const pourFlask = document.getElementById('pour-flask');
+    const pourLiquid = document.getElementById('pour-liquid');
+    const pourStream = document.getElementById('pour-stream');
+    
+    let state = 0; // 0: init, 1: paper placed & poured, 2: filtering
     let isFiltering = false;
     let filterProgress = 0; // 0 to 100
     let filterInterval;
     let dropInterval;
 
-    function placePaper() {
+    function placePaperAndPour() {
       if (state !== 0) return;
       actionBtn.disabled = true;
-      actionBtn.innerText = "A preparar...";
+      actionBtn.innerText = "A preparar papel...";
       paper.classList.add('placed');
       
       setTimeout(() => {
-         // emit wash drops
-         let washes = 0;
-         let wInt = setInterval(() => {
-             const wd = document.createElement('div');
-             wd.className = 'wash-drop';
-             wd.style.left = (45 + Math.random()*10) + '%';
-             wd.style.animation = 'wash-drip 0.4s linear forwards';
-             document.querySelector('.container').appendChild(wd);
-             setTimeout(() => wd.remove(), 400);
-             
-             // also drip to flask
-             const d = document.createElement('div');
-             d.className = 'drop';
-             d.style.animation = 'drip 0.3s linear forwards';
-             document.querySelector('.container').appendChild(d);
-             setTimeout(() => d.remove(), 300);
-             
-             washes++;
-             if (washes > 8) {
-                 clearInterval(wInt);
-                 setTimeout(() => {
-                    state = 1;
-                    mixture.classList.add('visible'); // pour mixture in
-                    actionBtn.disabled = false;
-                    actionBtn.innerText = "Manter premido para filtrar a vácuo";
-                    actionBtn.onclick = null;
-                    actionBtn.onmousedown = startFiltration;
-                    actionBtn.onmouseup = stopFiltration;
-                    actionBtn.onmouseleave = stopFiltration;
-                    actionBtn.ontouchstart = startFiltration;
-                    actionBtn.ontouchend = stopFiltration;
-                    instrText.innerText = "Filtre os cristais obtidos por vácuo.";
-                 }, 1000);
-             }
-         }, 150);
+         actionBtn.innerText = "A transferir mistura...";
+         instrText.innerText = "A transferir a mistura de cristais para o funil...";
+         pourFlask.classList.add('visible');
+         
+         setTimeout(() => {
+            pourFlask.classList.add('pouring');
+            
+            setTimeout(() => {
+               pourStream.classList.add('active');
+               pourLiquid.style.height = '0%';
+               setTimeout(() => {
+                   mixture.style.height = '40px'; 
+               }, 100);
+               
+               setTimeout(() => {
+                  pourStream.classList.remove('active');
+                  pourStream.classList.add('finishing');
+                  
+                  setTimeout(() => {
+                     pourFlask.classList.remove('visible');
+                     
+                     // State 1 implies ready to filter
+                     state = 1;
+                     actionBtn.innerText = "A filtrar a vácuo...";
+                     actionBtn.onmousedown = null;
+                     actionBtn.onmouseup = null;
+                     actionBtn.onclick = null;
+                     
+                     instrText.innerText = "O vácuo está a puxar o líquido...";
+                     
+                     // AUTO START
+                     startFiltration();
+                     
+                  }, 1000);
+               }, 1200);
+            }, 1000);
+         }, 800);
       }, 500);
     }
 
     function startFiltration() {
       if (state !== 1 || filterProgress >= 100) return;
       isFiltering = true;
-      actionBtn.innerText = "A filtrar...";
-      instrText.innerText = "O vácuo está a puxar o líquido...";
-      pump.classList.add('active'); // Turn on pump
+      pump.classList.add('active'); 
       
-      // Animate drops
       if (!dropInterval) {
           dropInterval = setInterval(() => {
              const d = document.createElement('div');
@@ -380,13 +405,10 @@
               stopFiltration();
               state = 2;
               actionBtn.innerText = "Confirmar e Avançar";
+              actionBtn.disabled = false;
               actionBtn.className = "btn success";
-              actionBtn.onmousedown = null;
-              actionBtn.onmouseup = null;
-              actionBtn.onmouseleave = null;
-              actionBtn.ontouchstart = null;
-              actionBtn.ontouchend = null;
               actionBtn.onclick = finishStep;
+              
               instrText.innerText = "Filtração concluída. Cristais isolados no papel de filtro.";
           }
       }, 30);
@@ -401,24 +423,34 @@
            clearInterval(dropInterval);
            dropInterval = null;
        }
-       
        pump.classList.remove('active');
-       
-       if (filterProgress < 100 && state === 1) {
-           actionBtn.innerText = "Manter premido para filtrar a vácuo";
-           instrText.innerText = "Filtre os cristais obtidos por vácuo.";
-       }
        isFiltering = false;
     }
-    
     function finishStep() {
+        const btn = document.getElementById('action-btn') || document.getElementById('next-btn') || document.getElementById('pour-btn');
+        if (btn) {
+           btn.innerText = "A aguardar...";
+           btn.disabled = true;
+           btn.style.pointerEvents = "none";
+        }
         if (window.parent && window.parent.document) {
           const buttons = window.parent.document.querySelectorAll('button');
-          buttons.forEach(btn => {
-            if (btn.innerText && btn.innerText.includes('Avançar_Hidden')) {
-              btn.click();
-            }
+          buttons.forEach(b => {
+             if (b.textContent && (b.textContent.includes('Avançar_Hidden') || b.textContent.trim() === 'Avançar')) {
+                 b.click();
+             }
           });
+          
+          // Legacy hotplate support
+          const tempInputs = window.parent.document.querySelectorAll('input[aria-label="Temp_Hidden"]');
+          if (tempInputs.length > 0 && typeof temp !== 'undefined') {
+            const tempInput = tempInputs[0];
+            const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value").set;
+            setter.call(tempInput, Math.floor(temp).toString());
+            tempInput.dispatchEvent(new Event('input', { bubbles: true }));
+          }
+        }
+    }
         }
     }
   </script>

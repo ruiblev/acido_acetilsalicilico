@@ -19,60 +19,69 @@ def inject_custom_css():
             
             html, body, [class*="css"] {
                 font-family: 'Inter', sans-serif;
+                font-size: 1.15rem !important; /* Letras maiores */
             }
             
-            /* Melhoria visual para botões do Streamlit */
+            p, li, .stMarkdown {
+                font-size: 1.15rem !important;
+                line-height: 1.6;
+            }
+            
+            /* Melhoria visual para botões do Streamlit com Alto Contraste */
             .stButton > button {
-                background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-                color: white;
-                border: none;
+                background: linear-gradient(135deg, #0284c7 0%, #2563eb 100%);
+                color: white !important;
+                border: 2px solid #7dd3fc !important;
                 border-radius: 8px;
-                padding: 10px 24px;
-                font-weight: 600;
-                box-shadow: 0 4px 6px rgba(37, 99, 235, 0.2);
+                padding: 12px 24px;
+                font-weight: 700 !important;
+                font-size: 1.1rem !important;
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
                 transition: all 0.3s ease;
             }
             .stButton > button:hover {
                 transform: translateY(-2px);
-                box-shadow: 0 6px 12px rgba(37, 99, 235, 0.3);
-                border-color: transparent;
-                color: white;
+                box-shadow: 0 6px 12px rgba(37, 99, 235, 0.5);
+                border-color: #bae6fd !important;
             }
             .stButton > button:active {
                 transform: translateY(0);
             }
             
-            /* Card Effect for Containers */
             .card {
-                background: white;
+                background: #1e293b;
                 padding: 30px;
                 border-radius: 15px;
-                box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+                box-shadow: 0 10px 25px rgba(0,0,0,0.5);
                 margin-bottom: 20px;
+                color: #f8fafc;
             }
             
-            /* Títulos */
+            /* Títulos - Modo Escuro */
             h1, h2, h3 {
-                color: #1e293b;
-                font-weight: 700;
+                color: #f1f5f9 !important;
+                font-weight: 800 !important;
             }
             
-            /* Alerta personalizado */
+            /* Alerta personalizado - Alto Contraste */
             .instruction-box {
-                background: #f8fafc;
-                border-left: 4px solid #3b82f6;
+                background: #1e293b;
+                border-left: 6px solid #fbbf24;
                 padding: 15px 20px;
                 border-radius: 0 8px 8px 0;
-                color: #334155;
+                color: #f8fafc;
                 margin-bottom: 20px;
-                font-size: 1.05rem;
+                font-size: 1.2rem;
+                font-weight: 600;
+                box-shadow: 0 4px 6px rgba(0,0,0,0.2);
             }
         </style>
     """, unsafe_allow_html=True)
 
 # --- ESTADO DA SESSÃO ---
-if 'mode' not in st.session_state:
-    st.session_state.mode = 'estudo'
+# --- ESTADO DA SESSÃO ---
+if 'mode' not in st.session_state or st.session_state.mode == 'estudo':
+    st.session_state.mode = 'facil'
 if 'step' not in st.session_state:
     st.session_state.step = 1
 if 'pratico_phase' not in st.session_state:
@@ -106,8 +115,19 @@ def previous_step():
 def set_mode():
     if st.session_state.radio_mode == 'Modo Prático-Experimental':
         st.session_state.mode = 'pratico'
+        st.session_state.step = 1
+        st.session_state.pratico_phase = 'prep'
     else:
-        st.session_state.mode = 'estudo'
+        st.session_state.mode = 'facil'
+
+def render_avancar(key):
+    # O botão avançar é agora sempre interagido via IFrame (Avançar_Hidden), 
+    # forçando o utilizador a concluir a etapa interativamente mesmo no Modo Fácil.
+    st.button("Avançar_Hidden", key=key, on_click=next_step)
+    components.html(
+        "<script>setTimeout(() => { window.parent.document.querySelectorAll('button').forEach(b=>{if(b.textContent && b.textContent.includes('Avançar_Hidden')){ const div = b.closest('div[data-testid=\\'stButton\\']'); if(div) { div.style.position = 'absolute'; div.style.left = '-9999px'; div.style.opacity = '0'; div.style.height = '1px'; div.style.overflow = 'hidden'; } }}) }, 50);</script>", 
+        width=0, height=0
+    )
 
 # --- DICIONÁRIOS DO MODO PRÁTICO ---
 # Todas as ações possíveis (corretas + distratores)
@@ -122,7 +142,6 @@ ALL_ACTIONS = [
 
 # Todos os materiais possíveis
 ALL_MATERIALS = [
-    "2 Copos de precipitação de 600 mL",
     "Anidrido acético (líquido)",
     "Balança",
     "Bomba de vácuo com Kitasato",
@@ -175,8 +194,8 @@ def header():
     col1, col2 = st.columns([3, 1])
     with col1:
         st.radio("Modo de Simulação:", 
-                 ['Modo de Estudo', 'Modo Prático-Experimental'], 
-                 index=0 if st.session_state.mode == 'estudo' else 1,
+                 ['Modo Fácil', 'Modo Prático-Experimental'], 
+                 index=0 if st.session_state.mode == 'facil' else 1,
                  key='radio_mode', 
                  on_change=set_mode, 
                  horizontal=True)
@@ -202,14 +221,6 @@ def etapa_1():
     """, unsafe_allow_html=True)
     
     st.write("Coloque o erlenmeyer na balança e utilize o botão abaixo para deitar o ácido salicílico lentamente. Pare quando atingir 2,00 g.")
-    # CSS para esconder o botão "Avançar_Hidden"
-    st.markdown("""
-        <style>
-            div[data-testid="stButton"] > button:contains("Avançar_Hidden") {
-                display: none !important;
-            }
-        </style>
-    """, unsafe_allow_html=True)
     
     # Path to index.html
     html_path = os.path.join(os.path.dirname(__file__), "components", "weighing_scale", "index.html")
@@ -219,7 +230,7 @@ def etapa_1():
     components.html(html_string, height=600)
     
     # Hidden button triggered by JavaScript inside the iframe
-    st.button("Avançar_Hidden", key="btn_avancar", on_click=next_step)
+    render_avancar("btn_avancar")
 def etapa_2():
     st.subheader("Etapa 2: Adição do Anidrido Acético")
     st.markdown("""
@@ -233,7 +244,7 @@ def etapa_2():
         html_string = f.read()
     
     components.html(html_string, height=550)
-    st.button("Avançar_Hidden", key="btn_avancar_2", on_click=next_step)
+    render_avancar("btn_avancar_2")
     
     st.button("Retroceder", on_click=previous_step)
 
@@ -250,7 +261,7 @@ def etapa_3():
         html_string = f.read()
     
     components.html(html_string, height=500)
-    st.button("Avançar_Hidden", key="btn_avancar_3", on_click=next_step)
+    render_avancar("btn_avancar_3")
     
     st.button("Retroceder", on_click=previous_step)
 
@@ -270,7 +281,7 @@ def etapa_4():
     st.text_input("Temp_Hidden", key="hotplate_temp", label_visibility="collapsed")
     
     components.html(html_string, height=600)
-    st.button("Avançar_Hidden", key="btn_avancar_4", on_click=next_step)
+    render_avancar("btn_avancar_4")
     
     st.button("Retroceder", on_click=previous_step)
 
@@ -282,12 +293,12 @@ def etapa_5():
         </div>
     """, unsafe_allow_html=True)
     
-    html_path = os.path.join(os.path.dirname(__file__), "components", "water_add", "index.html")
+    html_path = os.path.join(os.path.dirname(__file__), "components", "pipette_add", "index.html")
     with open(html_path, "r", encoding="utf-8") as f:
         html_string = f.read().replace("{{AMOUNT}}", "2 mL")
     
     components.html(html_string, height=550)
-    st.button("Avançar_Hidden", key="btn_avancar_5", on_click=next_step)
+    render_avancar("btn_avancar_5")
     st.button("Retroceder", on_click=previous_step)
 
 def etapa_6():
@@ -303,7 +314,7 @@ def etapa_6():
         html_string = f.read().replace("{{AMOUNT}}", "20 mL")
     
     components.html(html_string, height=550)
-    st.button("Avançar_Hidden", key="btn_avancar_6", on_click=next_step)
+    render_avancar("btn_avancar_6")
     st.button("Retroceder", on_click=previous_step)
 
 def etapa_7():
@@ -329,7 +340,7 @@ def etapa_7():
         html_string = f.read().replace("{{TEMP}}", str(reduced_temp))
     
     components.html(html_string, height=500)
-    st.button("Avançar_Hidden", key="btn_avancar_7", on_click=next_step)
+    render_avancar("btn_avancar_7")
     st.button("Retroceder", on_click=previous_step)
 
 def etapa_8():
@@ -345,7 +356,7 @@ def etapa_8():
         html_string = f.read()
     
     components.html(html_string, height=650)
-    st.button("Avançar_Hidden", key="btn_avancar_8", on_click=next_step)
+    render_avancar("btn_avancar_8")
     st.button("Retroceder", on_click=previous_step)
 
 def etapa_9():
@@ -361,7 +372,7 @@ def etapa_9():
         html_string = f.read()
     
     components.html(html_string, height=650)
-    st.button("Avançar_Hidden", key="btn_avancar_9", on_click=next_step)
+    render_avancar("btn_avancar_9")
     st.button("Retroceder", on_click=previous_step)
 
 def etapa_10():
@@ -377,7 +388,7 @@ def etapa_10():
         html_string = f.read()
     
     components.html(html_string, height=600)
-    st.button("Avançar_Hidden", key="btn_avancar_10", on_click=next_step)
+    render_avancar("btn_avancar_10")
     st.button("Retroceder", on_click=previous_step)
 
 def etapa_11():
@@ -393,7 +404,7 @@ def etapa_11():
         html_string = f.read()
     
     components.html(html_string, height=500)
-    st.button("Avançar_Hidden", key="btn_avancar_11", on_click=next_step)
+    render_avancar("btn_avancar_11")
     st.button("Retroceder", on_click=previous_step)
 
 def etapa_12():
@@ -428,7 +439,7 @@ def etapa_12():
         html_string = f.read().replace("{{MASS}}", final_mass_str)
     
     components.html(html_string, height=500)
-    st.button("Avançar_Hidden", key="btn_avancar_12", on_click=next_step)
+    render_avancar("btn_avancar_12")
     st.button("Retroceder", on_click=previous_step)
 
 def render_prep_phase():
@@ -493,7 +504,6 @@ def main():
     inject_custom_css()
     header()
     
-    # Modo Prático - Fase de Preparação (Apenas passos 1 a 12)
     if st.session_state.step <= 12 and st.session_state.mode == 'pratico' and st.session_state.pratico_phase == 'prep':
         render_prep_phase()
     else:

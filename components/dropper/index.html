@@ -10,7 +10,7 @@
       flex-direction: column;
       align-items: center;
       background: transparent;
-      color: #333;
+      color: #f8fafc;
     }
     .container {
       position: relative;
@@ -123,7 +123,7 @@
     
     .instruction {
       font-size: 16px;
-      color: #334155;
+      color: #cbd5e1;
       text-align: center;
       font-weight: 600;
     }
@@ -220,15 +220,31 @@
            dropInterval = null;
        }
     }
-    
     function finishStep() {
+        const btn = document.getElementById('action-btn') || document.getElementById('next-btn') || document.getElementById('pour-btn');
+        if (btn) {
+           btn.innerText = "A aguardar...";
+           btn.disabled = true;
+           btn.style.pointerEvents = "none";
+        }
         if (window.parent && window.parent.document) {
           const buttons = window.parent.document.querySelectorAll('button');
-          buttons.forEach(btn => {
-            if (btn.innerText && btn.innerText.includes('Avançar_Hidden')) {
-              btn.click();
-            }
+          buttons.forEach(b => {
+             if (b.textContent && (b.textContent.includes('Avançar_Hidden') || b.textContent.trim() === 'Avançar')) {
+                 b.click();
+             }
           });
+          
+          // Legacy hotplate support
+          const tempInputs = window.parent.document.querySelectorAll('input[aria-label="Temp_Hidden"]');
+          if (tempInputs.length > 0 && typeof temp !== 'undefined') {
+            const tempInput = tempInputs[0];
+            const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value").set;
+            setter.call(tempInput, Math.floor(temp).toString());
+            tempInput.dispatchEvent(new Event('input', { bubbles: true }));
+          }
+        }
+    }
         }
     }
   </script>

@@ -10,7 +10,7 @@
       flex-direction: column;
       align-items: center;
       background: transparent;
-      color: #333;
+      color: #f8fafc;
     }
     .container {
       position: relative;
@@ -112,14 +112,14 @@
     }
     .hose {
       position: absolute;
-      top: 330px;
-      left: 85px;
-      width: 90px;
-      height: 110px;
-      border: 8px solid #1e293b;
+      top: 335px;
+      left: 100px;
+      width: 75px;
+      height: 40px;
+      border: 6px solid #334155;
       border-top: none;
-      border-right: none;
-      border-radius: 0 0 0 30px;
+      border-left: none;
+      border-radius: 0 0 20px 0;
       z-index: 0;
     }
     .vacuum-pump {
@@ -128,15 +128,15 @@
       background: linear-gradient(to bottom, #475569, #1e293b);
       border-radius: 8px;
       position: absolute;
-      bottom: 20px;
-      right: 20px;
+      bottom: 50px;
+      left: 40px;
       z-index: 1;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-      border: 2px solid #64748b;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+      border: 2px solid #94a3b8;
     }
     .pump-dial {
       width: 24px;
@@ -197,20 +197,27 @@
       transform-origin: bottom;
     }
     .spray {
-      width: 4px;
+      width: 6px;
       height: 0px;
-      background: rgba(100, 200, 255, 0.8);
+      background: repeating-linear-gradient(to bottom, rgba(100, 200, 255, 0.9) 0px, rgba(100, 200, 255, 0.9) 8px, transparent 8px, transparent 16px);
+      background-size: 100% 16px;
       position: absolute;
       top: 125px;
       right: 175px; 
       z-index: 7;
-      transform: rotate(45deg); /* Point down to funnel center */
+      transform: rotate(45deg);
       transform-origin: top;
       transition: height 0.1s;
     }
     .spray.active {
       height: 100px;
+      animation: water-flow 0.2s linear infinite;
     }
+    @keyframes water-flow {
+      0% { background-position: 0 0; }
+      100% { background-position: 0 16px; }
+    }
+    
     
     .drop {
       width: 8px;
@@ -263,7 +270,7 @@
     }
     .instruction {
       font-size: 16px;
-      color: #334155;
+      color: #cbd5e1;
       text-align: center;
       font-weight: 600;
     }
@@ -375,15 +382,31 @@
        bottle.classList.remove('squeezed');
        spray.classList.remove('active');
     }
-    
     function finishStep() {
+        const btn = document.getElementById('action-btn') || document.getElementById('next-btn') || document.getElementById('pour-btn');
+        if (btn) {
+           btn.innerText = "A aguardar...";
+           btn.disabled = true;
+           btn.style.pointerEvents = "none";
+        }
         if (window.parent && window.parent.document) {
           const buttons = window.parent.document.querySelectorAll('button');
-          buttons.forEach(btn => {
-            if (btn.innerText && btn.innerText.includes('Avançar_Hidden')) {
-              btn.click();
-            }
+          buttons.forEach(b => {
+             if (b.textContent && (b.textContent.includes('Avançar_Hidden') || b.textContent.trim() === 'Avançar')) {
+                 b.click();
+             }
           });
+          
+          // Legacy hotplate support
+          const tempInputs = window.parent.document.querySelectorAll('input[aria-label="Temp_Hidden"]');
+          if (tempInputs.length > 0 && typeof temp !== 'undefined') {
+            const tempInput = tempInputs[0];
+            const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value").set;
+            setter.call(tempInput, Math.floor(temp).toString());
+            tempInput.dispatchEvent(new Event('input', { bubbles: true }));
+          }
+        }
+    }
         }
     }
   </script>

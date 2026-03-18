@@ -10,7 +10,7 @@
       flex-direction: column;
       align-items: center;
       background: transparent;
-      color: #333;
+      color: #f8fafc;
     }
     .container {
       position: relative;
@@ -273,16 +273,21 @@
       updateDisplay();
     }
 
-    function sendValue() {
-      // Find the hidden Streamlit button and click it
-      if (window.parent && window.parent.document) {
-        const buttons = window.parent.document.querySelectorAll('button');
-        buttons.forEach(btn => {
-          if (btn.innerText && btn.innerText.includes('Avançar_Hidden')) {
-            btn.click();
-          }
-        });
-      }
+        function sendValue() {
+        const btn = document.getElementById('next-btn');
+        if (btn) {
+           btn.innerText = "A aguardar...";
+           btn.disabled = true;
+           btn.style.pointerEvents = "none";
+        }
+        if (window.parent && window.parent.document) {
+          const buttons = window.parent.document.querySelectorAll('button');
+          buttons.forEach(b => {
+             if (b.textContent && (b.textContent.includes('Avançar_Hidden') || b.textContent.trim() === 'Avançar')) {
+                 b.click();
+             }
+          });
+        }
     }
   </script>
 </body>
