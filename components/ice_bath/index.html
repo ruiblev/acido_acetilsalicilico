@@ -80,18 +80,26 @@
       background: linear-gradient(to top, rgba(200, 200, 200, 0.8) 10%, rgba(100, 150, 255, 0.4) 100%);
       position: absolute;
       bottom: 0;
-      transition: background 2s;
+      transition: background 2s, filter 2s, backdrop-filter 2s;
     }
 
     
-    .crystal {
-      width: 10px;
-      height: 3px;
-      background: white;
+    .snow-crystal {
+      width: 6px;
+      height: 6px;
+      background: rgba(255, 255, 255, 0.95);
       position: absolute;
-      opacity: 0;
-      box-shadow: 0 0 2px rgba(255,255,255,0.8);
-      transform: rotate(45deg);
+      border-radius: 40% 60% 70% 30%; /* Ligeira irregularidade de cristal */
+      box-shadow: 0 0 5px rgba(255, 255, 255, 0.8);
+      opacity: 0.8;
+      z-index: 10;
+    }
+    
+    @keyframes fall {
+      0% { transform: translateY(0px) scale(0.5); opacity: 0; }
+      30% { opacity: 0.8; transform: translateY(10px) scale(1); }
+      70% { opacity: 0.8; }
+      100% { transform: translateY(30px) scale(0.8); opacity: 0; }
     }
     
     .thermometer {
@@ -225,19 +233,16 @@
 
     function createCrystal() {
       const c = document.createElement('div');
-      c.className = 'crystal';
-      c.style.left = (Math.random() * 80 + 10) + 'px';
-      c.style.bottom = (Math.random() * 60 + 5) + 'px';
-      c.style.transform = `rotate(${Math.random() * 180}deg)`;
-      flask.appendChild(c);
+      c.className = 'snow-crystal';
+      c.style.left = (Math.random() * 80 + 10) + '%';
+      c.style.top = (Math.random() * 60 + 10) + '%';
+      c.style.animation = `fall ${Math.random() * 2.0 + 4.0}s linear forwards`;
+      flaskLiquid.appendChild(c);
       
-      // fade in
-      let opacity = 0;
-      let fadeInt = setInterval(() => {
-        opacity += 0.1;
-        c.style.opacity = opacity;
-        if (opacity >= 1) clearInterval(fadeInt);
-      }, 100);
+      // cleanup element after animation
+      setTimeout(() => {
+        if (c.parentNode) c.remove();
+      }, 6000);
     }
 
     function startCooling() {
@@ -254,12 +259,13 @@
         
         if (temp < 30 && !crystalsAppearing) {
           crystalsAppearing = true;
-          flaskLiquid.style.background = 'linear-gradient(to top, rgba(230, 230, 230, 0.9) 30%, rgba(150, 200, 255, 0.5) 100%)';
+          flaskLiquid.style.background = 'linear-gradient(to top, rgba(230, 240, 245, 0.8) 10%, rgba(200, 220, 235, 0.5) 100%)';
+          flaskLiquid.style.backdropFilter = 'blur(1px)';
+          flaskLiquid.style.filter = 'drop-shadow(0 0 5px rgba(255,255,255,0.2))';
         }
         
-        if (crystalsAppearing && temp % 2 === 0) {
-            createCrystal();
-            createCrystal();
+        // Simpler falling crystals, less frequent
+        if (crystalsAppearing && temp % 4 === 0) {
             createCrystal();
         }
         
@@ -287,7 +293,7 @@
             }
         }
     }
-    function finishStep() {
+        function finishStep() {
         const btn = document.getElementById('action-btn') || document.getElementById('next-btn') || document.getElementById('pour-btn');
         if (btn) {
            btn.innerText = "A aguardar...";
@@ -310,8 +316,6 @@
             setter.call(tempInput, Math.floor(temp).toString());
             tempInput.dispatchEvent(new Event('input', { bubbles: true }));
           }
-        }
-    }
         }
     }
   </script>

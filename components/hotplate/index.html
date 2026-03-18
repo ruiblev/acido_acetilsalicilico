@@ -286,7 +286,7 @@
             }
         }, 300);
     }
-    function finishStep() {
+        function finishStep() {
         const btn = document.getElementById('action-btn') || document.getElementById('next-btn') || document.getElementById('pour-btn');
         if (btn) {
            btn.innerText = "A aguardar...";
@@ -309,18 +309,6 @@
             setter.call(tempInput, Math.floor(temp).toString());
             tempInput.dispatchEvent(new Event('input', { bubbles: true }));
           }
-        }
-    }
-          // Then trigger step advance via step_advance input
-          setTimeout(() => {
-            const inputs = window.parent.document.querySelectorAll('input[aria-label="step_advance"]');
-            if (inputs.length > 0) {
-              const input = inputs[0];
-              const nativeSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
-              nativeSetter.call(input, 'do');
-              input.dispatchEvent(new Event('input', { bubbles: true }));
-            }
-          }, 300);
         }
     }
   </script>

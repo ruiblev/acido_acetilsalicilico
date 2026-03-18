@@ -382,7 +382,7 @@
        bottle.classList.remove('squeezed');
        spray.classList.remove('active');
     }
-    function finishStep() {
+        function finishStep() {
         const btn = document.getElementById('action-btn') || document.getElementById('next-btn') || document.getElementById('pour-btn');
         if (btn) {
            btn.innerText = "A aguardar...";
@@ -405,8 +405,6 @@
             setter.call(tempInput, Math.floor(temp).toString());
             tempInput.dispatchEvent(new Event('input', { bubbles: true }));
           }
-        }
-    }
         }
     }
   </script>
