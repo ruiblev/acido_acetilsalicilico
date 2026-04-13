@@ -1,0 +1,5 @@
+# Keep-Alive Log — Simulador Ácido Acetilsalicílico
+# Este ficheiro é atualizado automaticamente pelo GitHub Actions
+# para manter a app Streamlit sempre ativa.
+
+[2026-04-13 10:34:41 UTC] ✅ App ativa - ping automático

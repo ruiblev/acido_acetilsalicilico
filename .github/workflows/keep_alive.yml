@@ -1,0 +1,41 @@
+name: Keep Alive - Auto Commit Diário
+
+on:
+  schedule:
+    # Corre todos os dias às 08:00, 14:00 e 20:00 UTC
+    - cron: '0 8 * * *'
+    - cron: '0 14 * * *'
+    - cron: '0 20 * * *'
+  workflow_dispatch:  # Permite execução manual
+
+jobs:
+  keep_alive:
+    name: Auto Commit para manter Streamlit ativo
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout do repositório
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configurar Git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Atualizar timestamp keep-alive
+        run: |
+          python keep_alive.py
+
+      - name: Commit e Push das alterações
+        run: |
+          git add keep_alive_log.txt
+          # Só faz commit se houver alterações
+          if git diff --staged --quiet; then
+            echo "Sem alterações para commitar."
+          else
+            git commit -m "chore: keep-alive auto-commit $(date '+%Y-%m-%d %H:%M:%S UTC')"
+            git push
+            echo "Commit e push realizados com sucesso!"
+          fi
