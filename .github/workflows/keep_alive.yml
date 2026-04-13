@@ -12,6 +12,8 @@ jobs:
   keep_alive:
     name: Auto Commit para manter Streamlit ativo
     runs-on: ubuntu-latest
+    permissions:
+      contents: write  # Necessário para o GITHUB_TOKEN poder fazer push
 
     steps:
       - name: Checkout do repositório
