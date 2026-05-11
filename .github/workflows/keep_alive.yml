@@ -20,24 +20,32 @@ jobs:
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
 
       - name: Configurar Git
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
-      - name: Atualizar timestamp keep-alive
-        run: |
-          python keep_alive.py
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
 
-      - name: Commit e Push das alterações
+      - name: Instalar dependências
+        run: pip install requests
+
+      - name: Executar ping à app Streamlit
+        run: python keep_alive.py
+        continue-on-error: true  # Não falha o workflow se o ping falhar
+
+      - name: Commit e Push das alterações (forçado)
         run: |
-          git add keep_alive_log.txt
-          # Só faz commit se houver alterações
-          if git diff --staged --quiet; then
-            echo "Sem alterações para commitar."
-          else
-            git commit -m "chore: keep-alive auto-commit $(date '+%Y-%m-%d %H:%M:%S UTC')"
-            git push
-            echo "Commit e push realizados com sucesso!"
-          fi
+          # Garante sempre uma alteração mesmo que o log não mude
+          TIMESTAMP=$(date -u '+%Y-%m-%d %H:%M:%S UTC')
+          echo "Last keep-alive: ${TIMESTAMP}" > .keepalive
+
+          git add keep_alive_log.txt .keepalive
+          git commit -m "chore: keep-alive auto-commit ${TIMESTAMP}" || echo "Nada para commitar"
+          git push
+          echo "✅ Push realizado com sucesso!"
