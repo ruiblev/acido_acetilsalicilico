@@ -2,8 +2,6 @@
 # Este ficheiro é atualizado automaticamente pelo GitHub Actions
 # para manter a app Streamlit sempre ativa.
 
-[2026-05-15 02:47:59 UTC] ✅ App ativa - ping automático
-[2026-05-15 02:48:30 UTC] ✅ App ativa - ping automático
 [2026-05-15 08:57:00 UTC] ✅ App ativa - ping automático
 [2026-05-15 08:57:31 UTC] ✅ App ativa - ping automático
 [2026-05-15 13:55:00 UTC] ✅ App ativa - ping automático
@@ -102,3 +100,5 @@
 [2026-05-27 03:26:24 UTC] ✅ App ativa - ping automático
 [2026-05-27 10:07:55 UTC] ✅ App ativa - ping automático
 [2026-05-27 10:08:26 UTC] ✅ App ativa - ping automático
+[2026-05-27 15:25:44 UTC] ✅ App ativa - ping automático
+[2026-05-27 15:26:16 UTC] ✅ App ativa - ping automático
